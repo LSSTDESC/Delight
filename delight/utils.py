@@ -3,6 +3,13 @@
 import numpy as np
 from scipy.misc import derivative
 
+import logging
+import coloredlogs
+
+logger = logging.getLogger(__name__)
+coloredlogs.install(level='INFO', logger=logger,fmt='%(asctime)s,%(msecs)03d %(programname)s, %(name)s[%(process)d] %(levelname)s %(message)s')
+
+
 
 class approx_DL():
     """
@@ -65,6 +72,10 @@ def random_hyperparams():
 
 
 def flux_likelihood(f_obs, f_obs_var, f_mod, f_mod_var=None):
+
+    msg = "flux_likelihood()"
+    logger.debug(msg)
+
     nz, nt, nf = f_mod.shape
     df = f_mod - f_obs[None, :]  # nz, nf
     if f_mod_var is None:
@@ -80,6 +91,8 @@ def scalefree_flux_likelihood_multiobj(
         f_obs_var,  # no, ..., nf
         f_mod,  # ..., nf
         normalized=True):
+    msg = "scalefree_flux_likelihood_multiobj(normalized={})".format(normalized)
+    logger.debug(msg)
 
     assert len(f_obs.shape) == len(f_mod.shape)
     assert len(f_obs_var.shape) == len(f_mod.shape)
@@ -128,6 +141,9 @@ def approx_flux_likelihood(
     Approximate flux likelihood, with scaling of both the mean and variance.
     This approximates the true likelihood with an iterative scheme.
     """
+
+    msg = "approx_flux_likelihood(marginalizeEll={},normalized={},renormalize={},returnChi2={},returnEllML={})".format(marginalizeEll,normalized,renormalize,returnChi2,returnEllML)
+    logger.debug(msg)
 
     assert len(f_obs.shape) == 1
     assert len(f_obs_var.shape) == 1
@@ -178,6 +194,9 @@ def approx_flux_likelihood(
 
 def scalefree_flux_likelihood(f_obs, f_obs_var,
                               f_mod, returnChi2=False):
+    msg = "scalefree_flux_likelihood(returnedChi2={})".format(returnChi2)
+    logger.debug(msg)
+
     nz, nt, nf = f_mod.shape
     var = f_obs_var  # nz * nt * nf
     invvar = np.where(f_obs/var < 1e-6, 0.0, var**-1.0)  # nz * nt * nf

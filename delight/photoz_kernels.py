@@ -11,7 +11,13 @@ from delight.photoz_kernels_cy import kernelparts, kernelparts_diag,\
 from delight.utils_cy import find_positions
 from delight.utils import approx_DL
 
+import logging
+import coloredlogs
+
 kind = "linear"
+
+logger = logging.getLogger(__name__)
+coloredlogs.install(level='DEBUG', logger=logger,fmt='%(asctime)s,%(msecs)03d %(programname)s, %(name)s[%(process)d] %(levelname)s %(message)s')
 
 
 class Photoz_linear_sed_basis():

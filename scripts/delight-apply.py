@@ -8,6 +8,10 @@ from delight.photoz_gp import PhotozGP
 from delight.photoz_kernels import Photoz_mean_function, Photoz_kernel
 from delight.utils_cy import approx_flux_likelihood_cy
 from time import time
+
+logger = logging.getLogger(__name__)
+coloredlogs.install(level='DEBUG', logger=logger,fmt='%(asctime)s,%(msecs)03d %(programname)s, %(name)s[%(process)d] %(levelname)s %(message)s')
+
 comm = MPI.COMM_WORLD
 threadNum = comm.Get_rank()
 numThreads = comm.Get_size()
@@ -17,7 +21,9 @@ if len(sys.argv) < 2:
     raise Exception('Please provide a parameter file')
 params = parseParamFile(sys.argv[1], verbose=False)
 if threadNum == 0:
-    print("--- DELIGHT-APPLY ---")
+    #print("--- DELIGHT-APPLY ---")
+    logger.info("--- DELIGHT-APPLY ---")
+
 
 # Read filter coefficients, compute normalization of filters
 bandCoefAmplitudes, bandCoefPositions, bandCoefWidths, norms\

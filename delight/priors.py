@@ -7,6 +7,12 @@ import astropy.cosmology.core
 from scipy.misc import derivative
 from delight.utils import approx_DL
 
+import logging
+import coloredlogs
+
+logger = logging.getLogger(__name__)
+coloredlogs.install(level='DEBUG', logger=logger,fmt='%(asctime)s,%(msecs)03d %(programname)s, %(name)s[%(process)d] %(levelname)s %(message)s')
+
 
 class Model:
     def __init__(self):

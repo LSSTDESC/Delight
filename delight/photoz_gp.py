@@ -9,9 +9,15 @@ from scipy.interpolate import interp1d
 from delight.utils import approx_DL, scalefree_flux_likelihood, symmetrize
 from delight.photoz_kernels import *
 
+import logging
+import coloredlogs
+
 log_2_pi = np.log(2*np.pi)
 
 __all__ = ["PhotozGP", "PhotozGP_SN"]
+
+logger = logging.getLogger(__name__)
+coloredlogs.install(level='DEBUG', logger=logger,fmt='%(asctime)s,%(msecs)03d %(programname)s, %(name)s[%(process)d] %(levelname)s %(message)s')
 
 
 class PhotozGP_SN:

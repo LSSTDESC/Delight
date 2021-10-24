@@ -2,8 +2,14 @@
 
 import numpy as np
 
-from scipy.misc import logsumexp
+#from scipy.misc import logsumexp
+from scipy.special import logsumexp
 
+import logging
+import coloredlogs
+
+logger = logging.getLogger(__name__)
+coloredlogs.install(level='DEBUG', logger=logger,fmt='%(asctime)s,%(msecs)03d %(programname)s, %(name)s[%(process)d] %(levelname)s %(message)s')
 
 def hypercube2simplex(zs):
     fac = np.concatenate((1 - zs, np.array([1])))

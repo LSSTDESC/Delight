@@ -6,6 +6,11 @@ from delight.utils import approx_DL
 # from specutils import extinction
 from astropy import units as u
 
+import logging
+import coloredlogs
+
+logger = logging.getLogger(__name__)
+coloredlogs.install(level='DEBUG', logger=logger,fmt='%(asctime)s,%(msecs)03d %(programname)s, %(name)s[%(process)d] %(levelname)s %(message)s')
 
 class PhotometricFilter:
     """Photometric filter response"""

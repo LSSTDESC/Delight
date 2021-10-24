@@ -9,3 +9,4 @@ coveralls
 mpi4py
 astropy
 sphinx
+coloredlogs
