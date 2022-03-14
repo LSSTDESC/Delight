@@ -1,6 +1,6 @@
 #from distutils.core import setup 
 
-from setuptools import setup, find_packages
+from setuptools import setup, find_packages, find_namespace_packages
 
 
 from distutils.extension import Extension
@@ -37,8 +37,9 @@ setup(
  
   #packages=find_packages(exclude=['tests','scripts','data']),  
   #packages=['delight'],
-  packages=['delight','delight.interfaces','delight.interfaces.rail'],
-  package_dir={'delight': './delight','delight.interfaces':'./interfaces','delight.interfaces.rail':'./interfaces/rail'},
+  #packages=['delight','delight.interfaces','delight.interfaces.rail'],
+  packages = find_namespace_packages(),
+  package_dir={'delight': './delight','delight.interfaces':'./delight/interfaces','delight.interfaces.rail':'./delight/interfaces/rail'},
   #package_data={'delightdata': ['data/BROWN_SEDs/*.dat', 'data/CWW_SEDs/*.dat','data/FILTERS/*.res']},
   #package_data={'': extra_files},
   command_options={
