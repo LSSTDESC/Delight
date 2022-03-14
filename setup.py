@@ -39,7 +39,7 @@ setup(
   #packages=['delight'],
   #packages=['delight','delight.interfaces','delight.interfaces.rail'],
   packages = find_namespace_packages(),
-  package_dir={'delight': './delight','delight.interfaces':'.delight/interfaces','./delight.interfaces.rail':'./delight/interfaces/rail'},
+  package_dir={'delight': './delight','delight.interfaces':'./delight/interfaces','delight.interfaces.rail':'./delight/interfaces/rail'},
   #package_data={'delightdata': ['data/BROWN_SEDs/*.dat', 'data/CWW_SEDs/*.dat','data/FILTERS/*.res']},
   #package_data={'': extra_files},
   command_options={
