@@ -49,4 +49,5 @@ setup(
             'build_dir': (None, 'docs/_build'),
             'config_dir': (None, 'docs'),
             }},
+  install_requires=["numpy", "scipy", "astropy"],
   ext_modules=ext_modules)
