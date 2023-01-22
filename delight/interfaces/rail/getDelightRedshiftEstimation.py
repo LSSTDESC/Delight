@@ -9,12 +9,10 @@ from delight.io import *
 from delight.utils import *
 import h5py
 
-import coloredlogs
 import logging
 
 
 logger = logging.getLogger(__name__)
-coloredlogs.install(level='DEBUG', logger=logger,fmt='%(asctime)s,%(msecs)03d %(programname)s, %(name)s[%(process)d] %(levelname)s %(message)s')
 
 
 
@@ -33,7 +31,7 @@ def getDelightRedshiftEstimation(configfilename,chunknum,nsize,index_sel):
     logger.info(msg)
 
     # initialize arrays to be returned
-    zmode  = np.full(nsize, fill_value=-1,dtype=np.float)
+    zmode  = np.full(nsize, fill_value=-1,dtype=np.float64)
 
     params = parseParamFile(configfilename, verbose=False)
 
