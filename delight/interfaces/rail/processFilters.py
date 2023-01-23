@@ -14,12 +14,10 @@ from scipy.optimize import leastsq
 from delight.utils import *
 from delight.io import *
 
-import coloredlogs
 import logging
 
 # Create a logger object.
 logger = logging.getLogger(__name__)
-coloredlogs.install(level='DEBUG', logger=logger,fmt='%(asctime)s,%(msecs)03d %(programname)s %(name)s[%(process)d] %(levelname)s %(message)s')
 
 
 def processFilters(configfilename):

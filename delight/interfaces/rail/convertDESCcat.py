@@ -16,11 +16,9 @@ from functools import reduce
 from delight.io import *
 from delight.utils import *
 from tables_io import io
-import coloredlogs
 import logging
 
 logger = logging.getLogger(__name__)
-coloredlogs.install(level='DEBUG', logger=logger,fmt='%(asctime)s,%(msecs)03d %(programname)s, %(name)s[%(process)d] %(levelname)s %(message)s')
 
 # option to convert DC2 flux level (in AB units) into internal Delight units
 # this option will be removed when optimisation of parameters will be implemented

@@ -15,12 +15,10 @@ import numpy as np
 from scipy.interpolate import interp1d
 from pprint import pprint
 
-import coloredlogs
 import logging
 
 
 logger = logging.getLogger(__name__)
-coloredlogs.install(level='DEBUG', logger=logger,fmt='%(asctime)s,%(msecs)03d %(programname)s, %(name)s[%(process)d] %(levelname)s %(message)s')
 
 
 def mknames(nt):

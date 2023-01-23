@@ -9,7 +9,6 @@
 #####################################################################################################
 from delight.utils import *
 #from rail.estimation.algos.include_delightPZ.delight_io import *
-import coloredlogs
 import logging
 import os
 
@@ -17,7 +16,6 @@ import os
 
 # Create a logger object.
 logger = logging.getLogger(__name__)
-coloredlogs.install(level='DEBUG', logger=logger,fmt='%(asctime)s,%(msecs)03d %(programname)s %(name)s[%(process)d] %(levelname)s %(message)s')
 
 
 def makeConfigParam(path,inputs_rail, chunknum = None):

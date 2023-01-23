@@ -16,12 +16,10 @@ from scipy.interpolate import interp1d
 from delight.io import *
 from delight.utils import *
 
-import coloredlogs
 import logging
 
 
 logger = logging.getLogger(__name__)
-coloredlogs.install(level='DEBUG', logger=logger,fmt='%(asctime)s,%(msecs)03d %(programname)s, %(name)s[%(process)d] %(levelname)s %(message)s')
 
 
 

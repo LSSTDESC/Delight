@@ -21,12 +21,10 @@ from delight.interfaces.rail.libPriorPZ import *
 
 
 
-import coloredlogs
 import logging
 
 
 logger = logging.getLogger(__name__)
-coloredlogs.install(level='DEBUG', logger=logger,fmt='%(asctime)s,%(msecs)03d %(programname)s, %(name)s[%(process)d] %(levelname)s %(message)s')
 
 FLAG_NEW_PRIOR = True
 
