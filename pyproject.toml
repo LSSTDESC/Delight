@@ -43,6 +43,17 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools_scm]
 write_to = "src/delight/_version.py"
 
+#[tool.setuptools.packages.find]
+#where = ["delight","delight.interfaces","delight.interfaces.rail"]  # list of folders that contain the packages (["."] by default)
+#include = ["my_package*"]  # package names should match these glob patterns (["*"] by default)
+#exclude = ["my_package.tests*"]  # exclude packages matching these glob patterns (empty by default)
+#namespaces = false  # to disable scanning PEP 420 namespaces (true by default)
+
+[tool.setuptools]
+packages = ["delight","delight.interfaces","delight.interfaces.rail"]
+
+
+
 [tool.pytest.ini_options]
 testpaths = [
     "tests",
