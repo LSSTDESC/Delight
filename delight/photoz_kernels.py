@@ -6,9 +6,13 @@ from scipy.special import erf
 import scipy.linalg
 from scipy.interpolate import interp1d, interp2d, RectBivariateSpline
 
-from delight.photoz_kernels_cy import kernelparts, kernelparts_diag,\
+#from delight.photoz_kernels_cy import kernelparts, kernelparts_diag,\
+#    kernel_parts_interp
+from delight.photoz_kernels_py import kernelparts, kernelparts_diag,\
     kernel_parts_interp
-from delight.utils_cy import find_positions
+
+#from delight.utils_cy import find_positions
+from delight.utils_py import find_positions
 from delight.utils import approx_DL
 
 kind = "linear"
@@ -264,7 +268,8 @@ class Photoz_kernel:
 
         else:  # not use interpolators
             fz1 = 1 + X[:, 1]
-            kernelparts_diag(NO1, self.numCoefs, self.numLines,
+            (self.KLd, self.KCd, self.D_alpha_Cd, self.D_alpha_Ld) = \
+                kernelparts_diag(NO1, self.numCoefs, self.numLines,
                              self.alpha_C, self.alpha_L,
                              self.fcoefs_amp, self.fcoefs_mu,
                              self.fcoefs_sig,
@@ -298,27 +303,29 @@ class Photoz_kernel:
 
             p1s = np.zeros(NO1, dtype=int)
             p2s = np.zeros(NO2, dtype=int)
-            find_positions(NO1, self.nz, fz1, p1s, fzgrid)
-            find_positions(NO2, self.nz, fz2, p2s, fzgrid)
+            p1s = find_positions(NO1, self.nz, fz1, p1s, fzgrid)
+            p2s = find_positions(NO2, self.nz, fz2, p2s, fzgrid)
 
-            kernel_parts_interp(NO1, NO2,
+            # compute the different terms of the kernel sum in Appendix B
+
+            self.KC_grid = kernel_parts_interp(NO1, NO2,
                                 self.KC,
                                 b1, fz1, p1s,
                                 b2, fz2, p2s,
                                 fzgrid, self.KC_grid)
-            kernel_parts_interp(NO1, NO2,
+            self.D_alpha_C_grid = kernel_parts_interp(NO1, NO2,
                                 self.D_alpha_C,
                                 b1, fz1, p1s,
                                 b2, fz2, p2s,
                                 fzgrid, self.D_alpha_C_grid)
 
             if self.numLines > 0:
-                kernel_parts_interp(NO1, NO2,
+                self.KL_grid = kernel_parts_interp(NO1, NO2,
                                     self.KL,
                                     b1, fz1, p1s,
                                     b2, fz2, p2s,
                                     fzgrid, self.KL_grid)
-                kernel_parts_interp(NO1, NO2,
+                self.D_alpha_L_grid = kernel_parts_interp(NO1, NO2,
                                     self.D_alpha_L,
                                     b1, fz1, p1s,
                                     b2, fz2, p2s,
@@ -326,7 +333,8 @@ class Photoz_kernel:
 
         else:  # not use interpolators
 
-            kernelparts(NO1, NO2, self.numCoefs, self.numLines,
+            self.KL, self.KC,self.D_alpha_C, self.D_alpha_L, self.D_alpha_z = \
+                        kernelparts(NO1, NO2, self.numCoefs, self.numLines,
                         self.alpha_C, self.alpha_L,
                         self.fcoefs_amp, self.fcoefs_mu, self.fcoefs_sig,
                         self.lines_mu[:self.numLines],
@@ -351,10 +359,13 @@ class Photoz_kernel:
         self.KC_grid, self.KL_grid = np.zeros(ts), np.zeros(ts)
         self.D_alpha_C_grid, self.D_alpha_L_grid, self.D_alpha_z_grid\
             = np.zeros(ts), np.zeros(ts), np.zeros(ts)
+        
         for b1 in range(self.numBands):
             for b2 in range(self.numBands):
                 b1_grid = np.repeat(b1, self.nz).astype(int)
                 b2_grid = np.repeat(b2, self.nz).astype(int)
+
+                self.D_alpha_C_grid[b1, b2, :, :],self.KL_grid[b1, b2, :, :],self.KC_grid[b1, b2, :, :],self.D_alpha_C_grid[b1, b2, :, :], self.D_alpha_L_grid[b1, b2, :, :],self.D_alpha_z_grid[b1, b2, :, :] = \
                 kernelparts(self.nz, self.nz, self.numCoefs, self.numLines,
                             self.alpha_C, self.alpha_L,
                             self.fcoefs_amp, self.fcoefs_mu, self.fcoefs_sig,
@@ -370,6 +381,7 @@ class Photoz_kernel:
                             self.D_alpha_z_grid[b1, b2, :, :])
 
         bands = np.arange(self.numBands).astype(int)
+
         fzgrid = 1 + self.redshiftGrid
         self.KL_diag_interp = np.empty(self.numBands, dtype=interp1d)
         self.KC_diag_interp = np.empty(self.numBands, dtype=interp1d)
@@ -381,7 +393,8 @@ class Photoz_kernel:
             D_alpha_C_grid, D_alpha_L_grid, D_alpha_z_grid\
                 = np.zeros(ts), np.zeros(ts), np.zeros(ts)
             b1_grid = np.repeat(b1, self.nz).astype(int)
-            kernelparts_diag(self.nz, self.numCoefs, self.numLines,
+            KL_grid,,KC_grid,D_alpha_C_grid,D_alpha_L_grid = \
+                kernelparts_diag(self.nz, self.numCoefs, self.numLines,
                              self.alpha_C, self.alpha_L,
                              self.fcoefs_amp, self.fcoefs_mu,
                              self.fcoefs_sig,
