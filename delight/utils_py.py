@@ -4,31 +4,66 @@
 # cimport cython
 # from libc.math cimport sqrt, M_PI, exp, pow, log
 # from libc.stdlib cimport malloc, free
-from math import M_PI, exp, log, pow
+
+# """ Examples of sphinx docstring
+#   Return the second derivative of a cubic spline.
+#
+#    Parameters
+#    ----------
+#    xs : np.ndarray
+#        The x coordinate of the cubic spline.
+#
+#    ys : np.ndarray
+#        The y coordinate of the cubic spline.
+#
+#    Returns
+#    -------
+#    np.ndarray
+#        The second derivative of the cubic spline.
+#
+#    """
+
+from math import exp, log, pow
 
 import numpy as np
 
-# M_PI = np.pi
+M_PI = np.pi
 
 
 def find_positions(
-    NO1: int,
-    nz: int,
+    NO1: np.uint64,
+    nz:  np.uint64,
     fz1: np.ndarray,  # array of long
     p1s: np.ndarray,  # array of long
     fzGrid: np.ndarray,  # array of double
 ) -> np.ndarray:
-    """Find the position of the redshift in a grid
+    """Find the position of the redshift in a grid fz
        Note the size is defined outside this function
-    Args:
-        NO1 (int): Size of the input array
-        nz (int): Number of bins in redshift
-        fz1 (np.ndarray): 1D-array of redshift
-        ps1 (np.ndarray): 1D-array of positions (indexed by long integer)
-        fzGrid (np.ndarray) : 1D array of 1+z
+       This function is called in the module photoz_kernels.py
 
-    Returns:
-        np.ndarray: output ps1 filled with the position of the redshift in the redshift grid
+    Parameters
+    ----------
+        NO1 : int 
+              Size of the input array fz1, the container of redshifts
+        nz  : int
+              Number of bins in redshifts in fzGrid
+        fz1 : np.ndarray
+              1D-array of redshifts (1+z1) for which one want to get their index in the grid fsGrid
+
+        ps1 : np.ndarray
+              1D-array of positions (indexed by long integer) corresponding th the position of the redshits fz1 in the fzGrid
+        fzGrid : np.ndarray 
+              1D array of (1+z) grid
+
+    Returns
+    -------
+        p1s : np.ndarray of int
+              Output ps1 filled with the position index of the redshifts fz1 in the redshift grid fzGrid
+
+    Notes
+    -----
+        The size of ps1 is defined by the calling function        
+
     """
 
     # cdef long p1, o1
@@ -70,8 +105,8 @@ def find_positions(
 
 
 def kernel_parts_interp(
-    NO1: int,
-    NO2: int,
+    NO1: np.uint64,
+    NO2: np.uint64,
     Kinterp: np.ndarray,  # 2D- array long
     b1: np.ndarray,  # array of long
     fz1: np.ndarray,  # array of double
@@ -113,13 +148,13 @@ def kernel_parts_interp(
 
 def approx_flux_likelihood_cy(
     like: np.ndarray,
-    nz: long,
-    nt: long,
-    nf: long,
+    nz: np.uint64,
+    nt: np.uint64,
+    nf: np.uint64,
     f_obs: np.ndarray,
     f_obs_var: np.ndarray,
     f_mod: np.ndarray,
-    f_mod_covar: np.ndarrray,
+    f_mod_covar: np.ndarray,
     ell_hat: np.ndarray,
     ell_var: np.ndarray,
 ) -> np.ndarray:
@@ -187,7 +222,7 @@ def approx_flux_likelihood_cy(
 
 
 # cdef double gauss_prob(double x, double mu, double var) nogil:
-def gauss_prob(x: double, mu: double, var: double) -> double:
+def gauss_prob(x: np.float64, mu: np.float64, var: np.float64) -> np.float64:
     """_summary_
 
     Args:
@@ -202,7 +237,7 @@ def gauss_prob(x: double, mu: double, var: double) -> double:
 
 
 # cdef double gauss_lnprob(double x, double mu, double var) nogil:
-def gauss_lnprob(x: double, mu: double, var: double) -> double:
+def gauss_lnprob(x: np.float64, mu: np.float64, var: np.float64) -> np.float64:
     """_summary_
 
     Args:
@@ -217,7 +252,7 @@ def gauss_lnprob(x: double, mu: double, var: double) -> double:
 
 
 # cdef double logsumexp(double* arr, long dim) nogil:
-def logsumexp(arr: np.ndarray, dim: long) -> float:
+def logsumexp(arr: np.ndarray, dim: np.uint64) -> np.float64:
     """_summary_
 
     Args:
@@ -241,10 +276,10 @@ def logsumexp(arr: np.ndarray, dim: long) -> float:
 def photoobj_evidences_marglnzell(
     logevidences: np.ndarray,
     alphas: np.ndarray,
-    nobj: long,
-    numTypes: long,
-    nz: long,
-    nf: long,
+    nobj: np.uint64,
+    numTypes: np.uint64,
+    nz: np.uint64,
+    nf: np.uint64,
     f_obs: np.ndarray,
     f_obs_var: np.ndarray,
     f_mod: np.ndarray,
@@ -308,9 +343,9 @@ def photoobj_evidences_marglnzell(
 def specobj_evidences_margell(
     logevidences: np.ndarray,
     alphas: np.ndarray,
-    nobj: np.ndarray,
-    numTypes: np.ndarray,
-    nf: np.ndarray,
+    nobj: np.uint64,
+    numTypes: np.uint64,
+    nf: np.uint64,
     f_obs: np.ndarray,
     f_obs_var: np.ndarray,
     f_mod: np.ndarray,
@@ -321,6 +356,29 @@ def specobj_evidences_margell(
     var_lnz: np.ndarray,
     rho: np.ndarray,
 ) -> np.ndarray:
+    """_summary_
+
+    Parameters
+    ----------
+        logevidences     : np.ndarray)
+                           _description_
+        alphas (np.ndarray): _description_
+        nobj (np.uint64): _description_
+        numTypes (np.uint64): _description_
+        nf (np.uint64): _description_
+        f_obs (np.ndarray): _description_
+        f_obs_var (np.ndarray): _description_
+        f_mod (np.ndarray): _description_
+        redshifts (np.ndarray): _description_
+        mu_ell (np.ndarray): _description_
+        mu_lnz (np.ndarray): _description_
+        var_ell (np.ndarray): _description_
+        var_lnz (np.ndarray): _description_
+        rho (np.ndarray): _description_
+
+    Returns:
+        np.ndarray: _description_
+    """
     # double [:] logevidences, # nobj
     # double [:] alphas, # nt
     # long nobj, long numTypes, long nf,
@@ -369,10 +427,10 @@ def specobj_evidences_margell(
 def photoobj_lnpost_zgrid_margell(
     lnpost: np.ndarray,
     alphas: np.ndarray,
-    nobj: long,
-    numTypes: long,
-    nz: long,
-    nf: long,
+    nobj: np.uint64,
+    numTypes: np.uint64,
+    nz: np.uint64,
+    nf: np.uint64,
     f_obs: np.ndarray,
     f_obs_var: np.ndarray,
     f_mod: np.ndarray,

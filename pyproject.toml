@@ -31,6 +31,10 @@ dev = [
     "pytest",
     "pytest-cov", # Used to report total code coverage
     "ruff", # Used for static linting of files
+    "numpy", # arrays
+    "matplotlib", # plotting
+    "astropy",
+    "scipy",
 ]
 
 [build-system]
