@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+# to run the test do
+# pytest -vv tests/test_utils_py.py
 
 from delight.utils_py import find_positions
 from time import time
@@ -16,6 +18,7 @@ def test_utils_py_findpositions():
     fzGrid = np.linspace(0.,10.,20)+1.
     N01 = len(fz1)
     nz = len(fzGrid)
-    ps1 = np.zeros(N01,dtype = np.int64)
+    ps1 = np.zeros(N01,dtype = np.uint64)
     ps1_out = find_positions(N01,nz,fz1,ps1,fzGrid)
-    assert_allclose(ps1_out,ps1)
+    assert_allclose(ps1_out,np.array([ 0,  1, 11,  5]),verbose=True)
+    
