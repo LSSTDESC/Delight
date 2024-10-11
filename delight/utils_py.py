@@ -404,7 +404,8 @@ def photoobj_evidences_marglnzell(
 
     Returns:
     --------
-        np.ndarray: _description_
+        np.ndarray: 
+        _description_
     """
     #
     # double [:] logevidences, # nobj
@@ -475,25 +476,39 @@ def specobj_evidences_margell(
 
     Parameters
     ----------
-        logevidences     : np.ndarray)
-                           _description_
-        alphas (np.ndarray): _description_
-        nobj (np.uint64): _description_
-        numTypes (np.uint64): _description_
-        nf (np.uint64): _description_
-        f_obs (np.ndarray): _description_
-        f_obs_var (np.ndarray): _description_
-        f_mod (np.ndarray): _description_
-        redshifts (np.ndarray): _description_
-        mu_ell (np.ndarray): _description_
-        mu_lnz (np.ndarray): _description_
-        var_ell (np.ndarray): _description_
-        var_lnz (np.ndarray): _description_
-        rho (np.ndarray): _description_
+        logevidences       : np.ndarray
+                            _description_
+        alphas             : np.ndarray
+                             _description_
+        nobj               : np.uint64
+                            _description_
+        numTypes           : np.uint64
+                             _description_
+        nf                 : np.uint64 
+                             _description_
+        f_obs              : np.ndarray
+                             _description_
+        f_obs_var          : np.ndarray
+                             _description_
+        f_mod              : np.ndarray
+                             _description_
+        redshifts          : np.ndarray 
+                             _description_
+        mu_ell             : np.ndarray
+                             _description_
+        mu_lnz             : np.ndarray
+                             _description_
+        var_ell            : np.ndarray
+                             _description_
+        var_lnz            : np.ndarray
+                             _description_
+        rho                : np.ndarray
+                              _description_
 
     Returns
     -------
-        np.ndarray: _description_
+        np.ndarray 
+        _description_
     """
     # double [:] logevidences, # nobj
     # double [:] alphas, # nt
@@ -562,26 +577,43 @@ def photoobj_lnpost_zgrid_margell(
 
     Parameters:
     -----------
-        lnpost (np.ndarray): _description_
-        alphas (np.ndarray): _description_
-        nobj (np.uint64): _description_
-        numTypes (np.uint64): _description_
-        nz (np.uint64): _description_
-        nf (np.uint64): _description_
-        f_obs (np.ndarray): _description_
-        f_obs_var (np.ndarray): _description_
-        f_mod (np.ndarray): _description_
-        z_grid_centers (np.ndarray): _description_
-        z_grid_sizes (np.ndarray): _description_
-        mu_ell (np.ndarray): _description_
-        mu_lnz (np.ndarray): _description_
-        var_ell (np.ndarray): _description_
-        var_lnz (np.ndarray): _description_
-        rho (np.ndarray): _description_
+        lnpost   : np.ndarray
+                   _description_
+        alphas   : np.ndarray
+                   _description_
+        nobj     : np.uint64)
+                   _description_
+        numTypes : np.uint64)
+                    _description_
+        nz       : np.uint64
+                    _description_
+        nf       : np.uint64 
+                   _description_
+        f_obs    : np.ndarray
+                   _description_
+        f_obs_var : np.ndarray 
+                    _description_
+        f_mod     : np.ndarray
+                    _description_
+        z_grid_centers : np.ndarray
+                         _description_
+        z_grid_sizes   : np.ndarray
+                         _description_
+        mu_ell         :  np.ndarray
+                          _description_
+        mu_lnz         :  np.ndarray
+                          _description_
+        var_ell        : np.ndarray
+                         _description_
+        var_lnz        : np.ndarray
+                         _description_
+        rho            : np.ndarray
+                         _description_
 
     Returns:
     --------
-        np.ndarray: _description_
+        np.ndarray: 
+        _description_
     """
     
 
