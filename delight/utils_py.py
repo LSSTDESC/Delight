@@ -23,7 +23,7 @@
 #
 #    """
 
-from math import exp, log, pow
+from math import exp, log, pow, sqrt
 
 import numpy as np
 
@@ -107,26 +107,63 @@ def find_positions(
 def kernel_parts_interp(
     NO1: np.uint64,
     NO2: np.uint64,
-    Kinterp: np.ndarray,  # 2D- array long
-    b1: np.ndarray,  # array of long
-    fz1: np.ndarray,  # array of double
-    p1s: np.ndarray,  # array of long
-    b2: np.ndarray,  # array of long
-    fz2: np.ndarray,  # array of double
-    p2s: np.ndarray,  # array of long
-    fzGrid: np.ndarray,  # 1D array of double
+    Kinterp: np.ndarray,  
+    b1: np.ndarray,  
+    fz1: np.ndarray,  
+    p1s: np.ndarray,  
+    b2: np.ndarray,  
+    fz2: np.ndarray,  
+    p2s: np.ndarray,  
+    fzGrid: np.ndarray,  
     Kgrid: np.ndarray,
 ) -> np.ndarray:
-    """_summary_
+    """Interpolate the kernel between a series of objects : left objects in N01 of redshifts  in fz1 array in band b1 array, 
+    right objects in N02 of redshifts in array fz2 in band b2 array.
+    called  by photoz_kernels.py
 
-    Args:
-        NO1 (int): _description_
-        NO2 (int): _description_
-        Kinterp (np.ndarray): _description_
+    Parameters
+    ----------
+        NO1 : np.uint64)
+              Number of objects with redshifts in fz1
+        NO2 : np.uint64): 
+              Number of objects iwth redhifts in fz2
 
-    Returns:
-        np.ndarray:  Kgrid):  double[:,:,:,:] Kgrid 4D dimenssional array of double
+        Kinterp :  2D np.ndarray of doubles
+                   Kinterp 
+        b1 : np.ndarray 1D of long integer
+              _description_
+        fz1 : np.ndarray 1D of double
+              _description_
+        p1s : np.ndarray 1D of long 
+              _description_
+        b2  : np.ndarray 1D of long interger
+              _description_
+        fz2 : np.ndarray 1D of double 
+              _description_
+        p2s :  np.ndarray 1D of long integer
+               _description_
+        fzGrid :  np.ndarray 1D array of grid for redshifts
+                 _description_
+        Kgrid  : np.ndarray) 4D array of double
+                 _description_
+
+    Returns
+    -------
+        np.ndarray: 
+        _description_
     """
+
+    #def kernel_parts_interp(
+    #        int NO1, int NO2,
+    #        double[:,:] Kinterp,
+    #        long[:] b1,
+    #        double[:] fz1,
+    #        long[:] p1s,
+    #        long [:] b2,
+    #        double[:] fz2,
+    #        long[:] p2s,
+    #        double[:] fzGrid,
+    #        double[:,:,:,:] Kgrid):
 
     # cdef int p1, p2, o1, o2
     # cdef double dzm2, opz1, opz2
@@ -160,18 +197,34 @@ def approx_flux_likelihood_cy(
 ) -> np.ndarray:
     """_summary_
 
-    Args:
-        like (np.ndarray): _description_
-        nz (long): _description_
-        nt (long): _description_
-        nf (long): _description_
-        f_obs (np.ndarray): _description_
-        f_obs_var (np.ndarray): _description_
-        f_mod (np.ndarray): _description_
-        f_mod_covar (np.ndarrray): _description_
-        ell_hat (np.ndarray): _description_
-        ell_var (np.ndarray): _description_
+    Parameters
+    ----------
+        like  :  np.ndarray
+                 _description_
+        nz    :  np.uint64)
+                 _description_
+        nt    :  np.uint64)
+                 _description_
+        nf    :  np.uint64)
+                 _description_
+        f_obs :  np.ndarray
+                 _description_
+        f_obs_var : np.ndarray  
+                    _description_
+        f_mod     : np.ndarray
+                    _description_
+        f_mod_covar :  np.ndarray
+                       _description_
+        ell_hat     : np.ndarray) 
+                      _description_
+        ell_var     : np.ndarray)
+                     _description_
+
+    Returns
+    -------
+        np.ndarray: _description_
     """
+   
 
     #   double [:, :] like,  # nz, nt
     #   long nz,
@@ -223,45 +276,66 @@ def approx_flux_likelihood_cy(
 
 # cdef double gauss_prob(double x, double mu, double var) nogil:
 def gauss_prob(x: np.float64, mu: np.float64, var: np.float64) -> np.float64:
-    """_summary_
+    """Compute the gaussian probability function
 
-    Args:
-        doublex (double): _description_
-        mu (double): _description_
-        var (double): _description_
+    Parameters:
+    -----------
+        x   : np.float64 
+              _description_
+        mu  : np.float64 
+              _description_
+        var : np.float64 
+              _description_
 
     Returns:
-        double: _description_
+    --------
+        np.float64: 
+        _description_
     """
+    
     return exp(-0.5 * pow(x - mu, 2.0) / var) / sqrt(2.0 * M_PI * var)
 
 
 # cdef double gauss_lnprob(double x, double mu, double var) nogil:
 def gauss_lnprob(x: np.float64, mu: np.float64, var: np.float64) -> np.float64:
-    """_summary_
+    """Compute the log gaussian probability function
 
-    Args:
-        x (double): _description_
-        mu (double): _description_
-        var (double): _description_
+    Parameters:
+    -----------
+        x   : np.float64 
+              _description_
+        mu  : np.float64 
+              _description_
+        var : np.float64 
+              _description_
 
     Returns:
-        double: _description_
+    --------
+        np.float64: 
+        _description_
     """
+    
     return -0.5 * pow(x - mu, 2) / var - 0.5 * log(2 * M_PI * var)
 
 
 # cdef double logsumexp(double* arr, long dim) nogil:
 def logsumexp(arr: np.ndarray, dim: np.uint64) -> np.float64:
-    """_summary_
+    """TODO
 
-    Args:
-        arr (np.ndarray): _description_
-        dim (long): _description_
+    Parameters:
+    -----------
+        arr  : np.ndarray 
+               _description_
+        dim  : np.uint64 
+               _description_
 
     Returns:
-        double: _description_
+    --------
+        np.float64 : 
+        _description_
     """
+   
+    
     # cdef int i
     result = 0.0
     largest_in_a = arr[0]
@@ -291,6 +365,47 @@ def photoobj_evidences_marglnzell(
     var_lnz: np.ndarray,
     rho: np.ndarray,
 ) -> np.ndarray:
+    """_summary_
+
+    Parameters:
+    -----------
+        logevidences  : np.ndarray 
+                        _description_
+        alphas        : np.ndarray) 
+                        _description_
+        nobj          : np.uint64)
+                        _description_
+        numTypes      : np.uint64)
+                        _description_
+        nz            : np.uint64 
+                        _description_
+        nf            : np.uint64) 
+                        _description_
+        f_obs         :  np.ndarray
+                         _description_
+        f_obs_var     :  np.ndarray
+                         _description_
+        f_mod         :  np.ndarray  
+                         _description_
+        z_grid_centers : np.ndarray
+                         _description_
+        z_grid_sizes   :  np.ndarray
+                         _description_
+        mu_ell         : np.ndarray
+                         _description_
+        mu_lnz         : np.ndarray
+                         _description_
+        var_ell        : np.ndarray
+                         _description_
+        var_lnz        : np.ndarray
+                         _description_
+        rho            : np.ndarray)
+                         _description_
+
+    Returns:
+    --------
+        np.ndarray: _description_
+    """
     #
     # double [:] logevidences, # nobj
     # double [:] alphas, # nt
@@ -376,7 +491,8 @@ def specobj_evidences_margell(
         var_lnz (np.ndarray): _description_
         rho (np.ndarray): _description_
 
-    Returns:
+    Returns
+    -------
         np.ndarray: _description_
     """
     # double [:] logevidences, # nobj
@@ -444,13 +560,14 @@ def photoobj_lnpost_zgrid_margell(
 ) -> np.ndarray:
     """_summary_
 
-    Args:
+    Parameters:
+    -----------
         lnpost (np.ndarray): _description_
         alphas (np.ndarray): _description_
-        nobj (long): _description_
-        numTypes (long): _description_
-        nz (long): _description_
-        nf (long): _description_
+        nobj (np.uint64): _description_
+        numTypes (np.uint64): _description_
+        nz (np.uint64): _description_
+        nf (np.uint64): _description_
         f_obs (np.ndarray): _description_
         f_obs_var (np.ndarray): _description_
         f_mod (np.ndarray): _description_
@@ -463,8 +580,10 @@ def photoobj_lnpost_zgrid_margell(
         rho (np.ndarray): _description_
 
     Returns:
+    --------
         np.ndarray: _description_
     """
+    
 
     # double [:, :, :] lnpost, # nobj * nt * nz
     # double [:] alphas, # nt
