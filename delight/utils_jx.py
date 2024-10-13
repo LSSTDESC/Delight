@@ -96,3 +96,43 @@ def bilininterp_precomputedbins(numBands, nobj, Kinterp, v1s, v2s, p1s, p2s, gri
     return Kinterp
 
 
+
+def kernel_parts_interp(
+    NO1, NO2, 
+    Kinterp, 
+    b1, b2, 
+    fz1, fz2, 
+    p1s, p2s, 
+    fzGrid, 
+    Kgrid
+):
+    # Fonction qui calcule une interpolation pour un couple d'objets
+    def interp_single(o1, o2):
+        # Extraction des valeurs nécessaires
+        opz1 = fz1[o1]
+        p1 = p1s[o1]
+        opz2 = fz2[o2]
+        p2 = p2s[o2]
+        
+        # Vérification des indices pour éviter les erreurs d'indexation
+        #p1 = int(p1)  # Assure-toi que p1 et p2 sont des entiers
+        #p2 = int(p2)
+        
+        dzm2 = 1. / (fzGrid[p1 + 1] - fzGrid[p1]) / (fzGrid[p2 + 1] - fzGrid[p2])
+        
+        # Calcul du résultat de l'interpolation
+        result = dzm2 * (
+            (fzGrid[p1 + 1] - opz1) * (fzGrid[p2 + 1] - opz2) * Kgrid[b1[o1], b2[o2], p1, p2]
+            + (opz1 - fzGrid[p1]) * (fzGrid[p2 + 1] - opz2) * Kgrid[b1[o1], b2[o2], p1 + 1, p2]
+            + (fzGrid[p1 + 1] - opz1) * (opz2 - fzGrid[p2]) * Kgrid[b1[o1], b2[o2], p1, p2 + 1]
+            + (opz1 - fzGrid[p1]) * (opz2 - fzGrid[p2]) * Kgrid[b1[o1], b2[o2], p1 + 1, p2 + 1]
+        )
+        
+        return result
+
+    # Vectorisation avec vmap pour appliquer l'interpolation sur toutes les paires (o1, o2)
+    Kinterp = vmap(lambda o1: vmap(lambda o2: interp_single(o1, o2))(jnp.arange(NO2)))(jnp.arange(NO1))
+
+    return Kinterp
+
+

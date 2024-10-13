@@ -2,7 +2,7 @@
 import pytest
 import jax.numpy as jnp
 from jax import jit
-from delight.utils_jx import find_positions,bilininterp_precomputedbins
+from delight.utils_jx import find_positions,bilininterp_precomputedbins,kernel_parts_interp
 
 
 
@@ -115,11 +115,71 @@ def test_bilininterp_large():
     
     assert jnp.allclose(Kinterp_result, expected_result), f"Expected {expected_result} but got {Kinterp_result}"
 
+
+
 # Test 3 : Test avec des grilles de tailles différentes
 def test_bilininterp_different_grid_sizes():
     numBands = 2
     nobj = 2
     Kinterp = jnp.zeros((numBands, nobj))
     v1s = jnp.array([0.5, 1.5])
-    v2s = jnp.ar
+    v2s = jnp.array([0.5, 1.5])
+    p1s = jnp.array([0, 1])
+    p2s = jnp.array([0, 1])
+    grid1 = jnp.array([0.0, 1.0, 2.0])
+    grid2 = jnp.array([0.0, 1.0])
+    Kgrid = jnp.array([
+        [[1.0, 2.0], [3.0, 4.0]],
+        [[1.5, 2.5], [3.5, 4.5]]
+    ])
 
+    Kinterp_result = bilininterp_precomputedbins(numBands, nobj, Kinterp, v1s, v2s, p1s, p2s, grid1, grid2, Kgrid)
+
+    # Teste si Kinterp a la forme attendue
+    assert Kinterp_result.shape == (numBands, nobj), f"Expected shape {(numBands, nobj)} but got {Kinterp_result.shape}"
+    
+    # Vérifie les valeurs interpolées attendues
+    expected_result = jnp.array([
+        [2.0, 2.5],  # Exemples de valeurs attendues pour les interpolations de Kinterp
+        [2.5, 3.0]
+    ])
+    assert jnp.allclose(Kinterp_result, expected_result), f"Expected {expected_result} but got {Kinterp_result}"
+
+
+
+
+def test_kernel_parts_interp():
+    # Définir les dimensions
+    NO1 = 2
+    NO2 = 2
+    numBands1 = 3
+    numBands2 = 3
+    nz1 = 4
+    nz2 = 4
+    
+    # Initialisation de Kgrid (avec 4 dimensions)
+    Kgrid = jnp.array([[[[1.0, 2.0], [3.0, 4.0]], [[5.0, 6.0], [7.0, 8.0]]],
+                       [[[9.0, 10.0], [11.0, 12.0]], [[13.0, 14.0], [15.0, 16.0]]],
+                       [[[17.0, 18.0], [19.0, 20.0]], [[21.0, 22.0], [23.0, 24.0]]]])
+
+    # Autres entrées
+    b1 = jnp.array([0, 1])
+    b2 = jnp.array([0, 1])
+    fz1 = jnp.array([0.5, 1.5])
+    fz2 = jnp.array([1.0, 2.0])
+    p1s = jnp.array([0, 1])
+    p2s = jnp.array([0, 1])
+    fzGrid = jnp.array([0.0, 1.0, 2.0, 3.0])
+
+    # Tableau Kinterp à remplir
+    Kinterp = jnp.zeros((NO1, NO2))
+
+    # Appel de la fonction
+    result = kernel_parts_interp(NO1, NO2, Kinterp, b1, b2, fz1, fz2, p1s, p2s, fzGrid, Kgrid)
+
+    # Vérification que le résultat n'est pas vide
+    assert result.shape == (NO1, NO2), "The shape of the result is incorrect."
+
+    # Test des valeurs interpolées pour certains indices spécifiques
+    expected_result = 0.0  # Valeur d'attente, ajuster en fonction du calcul exact.
+    assert jnp.allclose(result, expected_result), f"Expected {expected_result}, but got {result}"
