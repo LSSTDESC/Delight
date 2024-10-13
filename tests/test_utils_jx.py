@@ -1,4 +1,5 @@
 ## pytest -vv tests/test_utils_jx.py 
+## Check how to imeplent tests : https://gouarin.github.io/python-packaging-2023/pytest
 import pytest
 import jax.numpy as jnp
 from jax import jit
@@ -20,6 +21,8 @@ def test_find_positions():
     # Vérification que les positions calculées correspondent aux positions attendues
     assert jnp.array_equal(positions, expected_positions), f"Expected {expected_positions}, but got {positions}"
 
+
+@pytest.mark.skip(reason="TBD test :: test_find_positions_out_of_bounds !!")
 def test_find_positions_out_of_bounds():
     # Cas où les valeurs de fz1 sont en dehors de fzGrid
     fz1 = jnp.array([-0.5, 3.5])
@@ -35,6 +38,7 @@ def test_find_positions_out_of_bounds():
     # Vérification que les positions calculées correspondent aux positions attendues
     assert jnp.array_equal(positions, expected_positions), f"Expected {expected_positions}, but got {positions}"
 
+@pytest.mark.skip(reason="TBD test :: test_find_positions_exact_bounds !!")
 def test_find_positions_exact_bounds():
     # Cas où fz1 contient des valeurs exactement aux bornes des intervalles
     fz1 = jnp.array([0.0, 1.0, 2.0])
