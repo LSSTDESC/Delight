@@ -319,3 +319,193 @@ def logsumexp(arr):
     largest_in_a = jnp.max(arr)
     return largest_in_a + jnp.log(jnp.sum(jnp.exp(arr - largest_in_a)))
 
+
+
+
+
+@partial(jit, static_argnums=(2,3,4))
+def photoobj_evidences_marglnzell(
+    logevidences,  # nobj
+    alphas,  # nt
+    nobj, numTypes, nz, nf,
+    f_obs,  # nobj * nf
+    f_obs_var,  # nobj * nf
+    f_mod,  # nt * nz * nf
+    z_grid_centers,  # nz
+    z_grid_sizes,  # nz
+    mu_ell,  # nt
+    mu_lnz, var_ell,  # nt
+    var_lnz, rho  # nt
+):
+    # Fonction pour calculer logpost pour chaque couple (o, i_z, i_t)
+    def compute_logpost(o):
+        
+        def inner_loop_logpost(i_z, logpost):
+            def inner_inner_loop(i_t, logpost):
+                mu_ell_prime = mu_ell[i_t] + rho[i_t] * (jnp.log(z_grid_centers[i_z]) - mu_lnz[i_t]) / var_lnz[i_t]
+                var_ell_prime = var_ell[i_t] - (rho[i_t] ** 2) / var_lnz[i_t]
+                
+                FOT = mu_ell_prime / var_ell_prime
+                FTT = 1.0 / var_ell_prime
+                FOO = (mu_ell_prime ** 2) / var_ell_prime
+                logDenom = 0.0
+
+                # Boucle interne sur les caractéristiques observées
+                def obs_loop(i_f, loop_vals):
+                    FOT, FTT, FOO, logDenom = loop_vals
+                    FOT += f_mod[i_t, i_z, i_f] * f_obs[o, i_f] / f_obs_var[o, i_f]
+                    FTT += (f_mod[i_t, i_z, i_f] ** 2) / f_obs_var[o, i_f]
+                    FOO += (f_obs[o, i_f] ** 2) / f_obs_var[o, i_f]
+                    logDenom += jnp.log(f_obs_var[o, i_f] * 2 * jnp.pi)
+                    return (FOT, FTT, FOO, logDenom)
+
+                FOT, FTT, FOO, logDenom = lax.fori_loop(0, nf, obs_loop, (FOT, FTT, FOO, logDenom))
+
+                chi2 = FOO - (FOT ** 2) / FTT
+                logDenom += jnp.log(var_ell_prime) + jnp.log(FTT)
+                lnprior_lnz = gauss_lnprob(jnp.log(z_grid_centers[i_z]), mu_lnz[i_t], var_lnz[i_t])
+
+                logpost = logpost.at[i_t, i_z].set(jnp.log(alphas[i_t]) - 0.5 * chi2 - 0.5 * logDenom + lnprior_lnz + jnp.log(z_grid_sizes[i_z]))
+                return logpost
+
+            return lax.fori_loop(0, numTypes, inner_inner_loop, logpost)
+
+        # Initialisation de logpost
+        logpost = jnp.zeros((numTypes, nz))
+        logpost = lax.fori_loop(0, nz, inner_loop_logpost, logpost)
+        
+        #return logsumexp(logpost, axis=(0, 1))
+        # MUST BE CHECKED
+        return logsumexp(logpost)
+
+    # Boucle externe sur les objets
+    def outer_loop(o, logevidences):
+        logevidences = logevidences.at[o].set(compute_logpost(o))
+        return logevidences
+
+    # Utilisation de lax.fori_loop pour la boucle externe
+    logevidences = lax.fori_loop(0, nobj, outer_loop, logevidences)
+    
+    return logevidences
+
+
+# Application de JIT avec static_argnums pour les arguments statiques
+#@jax.jit(static_argnums=(3, 4, 5))  # numTypes, nf, nobj sont statiques
+@partial(jit, static_argnums=(3,4,5))
+def specobj_evidences_margell(
+    logevidences,  # nobj
+    alphas,  # nt
+    nobj, numTypes, nf,
+    f_obs,  # nobj * nf
+    f_obs_var,  # nobj * nf
+    f_mod,  # nt * nobj * nf
+    redshifts,  # nobj
+    mu_ell,  # nt
+    mu_lnz, var_ell,  # nt
+    var_lnz, rho  # nt
+):
+    # Boucle interne sur les types et les redshifts
+    def compute_logpost(o, logevidences):
+        # Initialisation du tableau logpost
+        logpost = jnp.zeros(numTypes)
+
+        # Boucle sur les types
+        def inner_loop(i_t, logpost):
+            # Calcul des paramètres de l'intégration
+            mu_ell_prime = mu_ell[i_t] + rho[i_t] * (jnp.log(redshifts[o]) - mu_lnz[i_t]) / var_lnz[i_t]
+            var_ell_prime = var_ell[i_t] - (rho[i_t] ** 2) / var_lnz[i_t]
+
+            FOT = mu_ell_prime / var_ell_prime
+            FTT = 1. / var_ell_prime
+            FOO = (mu_ell_prime ** 2) / var_ell_prime
+            logDenom = 0.0
+
+            # Boucle interne sur les fréquences
+            def freq_loop(i_f, loop_vals):
+                FOT, FTT, FOO, logDenom = loop_vals
+                FOT += f_mod[i_t, o, i_f] * f_obs[o, i_f] / f_obs_var[o, i_f]
+                FTT += (f_mod[i_t, o, i_f] ** 2) / f_obs_var[o, i_f]
+                FOO += (f_obs[o, i_f] ** 2) / f_obs_var[o, i_f]
+                logDenom += jnp.log(f_obs_var[o, i_f] * 2 * jnp.pi)
+                return (FOT, FTT, FOO, logDenom)
+
+            # Lancer la boucle interne sur les fréquences
+            FOT, FTT, FOO, logDenom = lax.fori_loop(0, nf, freq_loop, (FOT, FTT, FOO, logDenom))
+
+            # Calcul du chi2
+            chi2 = FOO - (FOT ** 2) / FTT
+            logDenom += jnp.log(var_ell_prime) + jnp.log(FTT)
+            lnprior_lnz = gauss_lnprob(jnp.log(redshifts[o]), mu_lnz[i_t], var_lnz[i_t])
+
+            # Mise à jour de logpost
+            logpost = logpost.at[i_t].set(jnp.log(alphas[i_t]) - 0.5 * chi2 - 0.5 * logDenom + lnprior_lnz)
+            return logpost
+
+        # Lancer la boucle sur les types
+        logpost = lax.fori_loop(0, numTypes, inner_loop, logpost)
+
+        # Calcul du log-evidence pour cet objet
+        logevidences = logevidences.at[o].set(logsumexp(logpost, axis=0))
+        return logevidences
+
+    # Boucle externe sur les objets
+    logevidences = lax.fori_loop(0, nobj, compute_logpost, logevidences)
+    
+    return logevidences
+
+
+
+
+#@jax.jit
+@partial(jit, static_argnums=(2,3,4,5))
+def photoobj_lnpost_zgrid_margell(
+    lnpost,  # nobj * nt * nz
+    alphas,  # nt
+    nobj, numTypes, nz, nf,
+    f_obs,  # nobj * nf
+    f_obs_var,  # nobj * nf
+    f_mod,  # nt * nz * nf
+    z_grid_centers,  # nz
+    z_grid_sizes,  # nz
+    mu_ell,  # nt
+    mu_lnz, var_ell,  # nt
+    var_lnz, rho  # nt
+):
+    def compute_for_type(o, i_z, i_t, f_obs, f_obs_var, f_mod, z_grid_centers, mu_ell, rho, mu_lnz, var_lnz, var_ell, alphas):
+        mu_ell_prime = mu_ell[i_t] + rho[i_t] * (jnp.log(z_grid_centers[i_z]) - mu_lnz[i_t]) / var_lnz[i_t]
+        var_ell_prime = var_ell[i_t] - (rho[i_t] ** 2) / var_lnz[i_t]
+
+        FOT = mu_ell_prime / var_ell_prime
+        FTT = 1. / var_ell_prime
+        FOO = (mu_ell_prime ** 2) / var_ell_prime
+        logDenom = 0.0
+
+        # Boucle interne sur les fréquences
+        def freq_loop(i_f, loop_vals):
+            FOT, FTT, FOO, logDenom = loop_vals
+            FOT += f_mod[i_t, i_z, i_f] * f_obs[o, i_f] / f_obs_var[o, i_f]
+            FTT += (f_mod[i_t, i_z, i_f] ** 2) / f_obs_var[o, i_f]
+            FOO += (f_obs[o, i_f] ** 2) / f_obs_var[o, i_f]
+            logDenom += jnp.log(f_obs_var[o, i_f] * 2 * jnp.pi)
+            return (FOT, FTT, FOO, logDenom)
+
+        # Lancer la boucle interne sur les fréquences
+        FOT, FTT, FOO, logDenom = lax.fori_loop(0, nf, freq_loop, (FOT, FTT, FOO, logDenom))
+
+        # Calcul du chi2
+        chi2 = FOO - (FOT ** 2) / FTT
+        logDenom += jnp.log(var_ell_prime) + jnp.log(FTT)
+        lnprior_lnz = gauss_lnprob(jnp.log(z_grid_centers[i_z]), mu_lnz[i_t], var_lnz[i_t])
+
+        # Retourner lnpost
+        return jnp.log(alphas[i_t]) - 0.5 * chi2 - 0.5 * logDenom + lnprior_lnz
+
+    # Vectoriser l'application de compute_for_type sur les objets (o), les redshifts (i_z) et les types (i_t)
+    # Chaque élément de lnpost[o, i_t, i_z] est le résultat de compute_for_type
+    compute_for_type_vec = vmap(compute_for_type, in_axes=(0, None, None, None, None, None, None, None, None, None, None, None, None))
+
+    # Appliquer vmap à tous les objets, types, et redshifts
+    lnpost = vmap(compute_for_type_vec, in_axes=(0, None, None, None, None, None, None, None, None, None, None, None))(jnp.arange(nobj), z_grid_centers, mu_ell, rho, mu_lnz, var_ell, var_lnz, alphas, f_obs, f_obs_var, f_mod)
+
+    # Retourner lnpost final
+    return lnpost
