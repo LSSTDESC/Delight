@@ -2,6 +2,7 @@
 import jax.numpy as jnp
 from jax import jit,lax
 from jax import vmap
+from functools import partial
 from jax.scipy.special import logsumexp
 
 
@@ -173,6 +174,62 @@ def kernel_parts_interp(
 
 
 
+@partial(jit, static_argnums=(0,1))
+def kernel_parts_interp_jax(
+    NO1, NO2, 
+    Kinterp, 
+    b1, b2, 
+    fz1, fz2, 
+    p1s, p2s, 
+    fzGrid, 
+    Kgrid
+):
+    """Interpolates the kernel between objects of type 1 (test) and objects of type 2 (training).
+
+    Args:
+        NO1 (int): Number of objects of type 1 (test objects).
+        NO2 (int): Number of objects of type 2 (training objects).
+        b1 (array): Band indices for objects of type 1.
+        b2 (array): Band indices for objects of type 2.
+        fz1 (array): (1 + z) values for objects of type 1.
+        fz2 (array): (1 + z) values for objects of type 2.
+        p1s (array): Indices in fzGrid for fz1 values.
+        p2s (array): Indices in fzGrid for fz2 values.
+        fzGrid (array): Grid of (1 + z) values.
+        Kgrid (array): Kernel grid of shape (numBands1, numBands2, nz1, nz2).
+
+    Returns:
+        array: Interpolated kernel values of shape (NO1, NO2).
+    """
+
+    # Function to compute interpolation for a single pair of objects (o1, o2)
+    def interp_single(o1, o2):
+        opz1 = fz1[o1]
+        p1 = p1s[o1]
+        opz2 = fz2[o2]
+        p2 = p2s[o2]
+        
+        dzm2 = 1. / (fzGrid[p1 + 1] - fzGrid[p1]) / (fzGrid[p2 + 1] - fzGrid[p2])
+        
+        result = dzm2 * (
+            (fzGrid[p1 + 1] - opz1) * (fzGrid[p2 + 1] - opz2) * Kgrid[b1[o1], b2[o2], p1, p2]
+            + (opz1 - fzGrid[p1]) * (fzGrid[p2 + 1] - opz2) * Kgrid[b1[o1], b2[o2], p1 + 1, p2]
+            + (fzGrid[p1 + 1] - opz1) * (opz2 - fzGrid[p2]) * Kgrid[b1[o1], b2[o2], p1, p2 + 1]
+            + (opz1 - fzGrid[p1]) * (opz2 - fzGrid[p2]) * Kgrid[b1[o1], b2[o2], p1 + 1, p2 + 1]
+        )
+        
+        return result
+
+    # Apply vectorization with vmap over NO1 and NO2 objects
+    Kinterp = vmap(lambda o1: vmap(lambda o2: interp_single(o1, o2))(jnp.arange(NO2)))(jnp.arange(NO1))
+
+    return Kinterp
+
+
+
+
+
+@jit
 def approx_flux_likelihood_jax(f_obs, f_obs_var, f_mod, f_mod_covar, ell_hat, ell_var, niter=2):
     """Compute likelihood function for fluxes
 
@@ -240,4 +297,25 @@ def approx_flux_likelihood_jax(f_obs, f_obs_var, f_mod, f_mod_covar, ell_hat, el
     normalized_likelihoods = jnp.exp(likelihoods - loglikemax)
 
     return normalized_likelihoods
+
+
+
+# Gaussian probability function
+@jit
+def gauss_prob(x, mu, var):
+    """Compute the Gaussian probability."""
+    return jnp.exp(-0.5 * jnp.power(x - mu, 2.) / var) / jnp.sqrt(2. * jnp.pi * var)
+
+# Log of Gaussian probability function
+@jit
+def gauss_lnprob(x, mu, var):
+    """Compute the log of the Gaussian probability."""
+    return -0.5 * jnp.power(x - mu, 2) / var - 0.5 * jnp.log(2 * jnp.pi * var)
+
+# LogSumExp function
+@jit
+def logsumexp(arr):
+    """Compute the log-sum-exp of the input array."""
+    largest_in_a = jnp.max(arr)
+    return largest_in_a + jnp.log(jnp.sum(jnp.exp(arr - largest_in_a)))
 

@@ -4,6 +4,7 @@ import pytest
 import jax.numpy as jnp
 from jax import jit
 from delight.utils_jx import find_positions,bilininterp_precomputedbins,kernel_parts_interp
+from delight.utils_jx import approx_flux_likelihood_jax, gauss_prob,gauss_lnprob,logsumexp
 
 
 
@@ -152,7 +153,7 @@ def test_bilininterp_different_grid_sizes():
 
 
 
-def test_kernel_parts_interp():
+def test_kernel_parts_interp_jax():
     # Définir les dimensions
     NO1 = 2
     NO2 = 2
@@ -187,3 +188,33 @@ def test_kernel_parts_interp():
     # Test des valeurs interpolées pour certains indices spécifiques
     expected_result = 0.0  # Valeur d'attente, ajuster en fonction du calcul exact.
     assert jnp.allclose(result, expected_result), f"Expected {expected_result}, but got {result}"
+
+
+
+def test_kernel_parts_interp_jax_tbt():
+    NO1 = 2
+    NO2 = 2
+    b1 = jnp.array([0, 1])
+    b2 = jnp.array([0, 1])
+    fz1 = jnp.array([1.1, 2.2])
+    fz2 = jnp.array([1.1, 2.2])
+    p1s = jnp.array([0, 1])
+    p2s = jnp.array([0, 1])
+    fzGrid = jnp.array([1.0, 2.0, 3.0])
+    Kgrid = jnp.array([[[[1.0, 2.0], [3.0, 4.0]], [[5.0, 6.0], [7.0, 8.0]]],
+                       [[[9.0, 10.0], [11.0, 12.0]], [[13.0, 14.0], [15.0, 16.0]]]])
+
+    Kinterp = jnp.zeros((NO1, NO2))
+
+    # Appel de la fonction avec des valeurs fictives
+    result = kernel_parts_interp_jax(NO1, NO2, Kinterp, b1, b2, fz1, fz2, p1s, p2s, fzGrid, Kgrid)
+
+    # Vérifier que le résultat est du bon type et de la bonne forme
+    assert result.shape == (NO1, NO2), "La forme du résultat est incorrecte"
+    
+    # Vérifier les valeurs retournées (ceci dépendra de votre logique d'implémentation)
+    # On pourrait ici comparer à des valeurs attendues calculées à la main
+    assert jnp.all(result >= 0), "Certaines valeurs du résultat sont incorrectes"
+    
+    # Test d'une valeur spécifique si vous avez des attentes précises
+    assert jnp.isclose(result[0, 0], 3.0), "La valeur interpolée est incorrecte"
