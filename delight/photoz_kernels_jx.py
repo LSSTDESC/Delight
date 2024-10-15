@@ -11,6 +11,31 @@ from jax.scipy.special import logsumexp
 def kernel_parts_interp_jx(
     NO1, NO2, Kgrid, b1, fz1, p1s, b2, fz2, p2s, fzGrid
 ):
+    """Interpolate some parts of of the kernel
+
+    :param NO1: Number of "test" objects (left part)
+    :type NO1: uint
+    :param NO2: Number of "training" objects (right part)
+    :type NO2: uint
+    :param Kgrid: Kernel grid to interpolate 4D (b1,b2,p1,p2)
+    :type Kgrid: jnp.array
+    :param b1: index band array for object 1
+    :type b1: jnp.array of uint
+    :param fz1: array of 1+z for object 1
+    :type fz1: jnp.array(float)
+    :param p1s: array of position of fz1 in fzGrid
+    :type p1s: array of uint
+    :param b2: index band array for object 2
+    :type b2:  jnp.array of uint
+    :param fz2: array of 1+z for object 2
+    :type fz2: jnp.array(float)
+    :param p2s: array of position of fz2 in fzGrid
+    :type p2s: array of uint
+    :param fzGrid: 1+z grid
+    :type fzGrid: grid of 1+z
+    :return: Kinterp_result : interpolation of Kgrid
+    :rtype: jnp.array with same dimension of Kgrid
+    """
     # Fonction de calcul d'un élément Kinterp
     def kernel_part(o1, o2):
         # Extraire les valeurs nécessaires
@@ -47,6 +72,39 @@ def kernel_parts_interp_jx(
 @partial(jit, static_argnames=["NO1", "NC", "NL", "grad_needed"])
 def kernelparts_diag_jx(NO1, NC, NL, alpha_C, alpha_L, fcoefs_amp, fcoefs_mu, fcoefs_sig, 
                         lines_mu, lines_sig, norms, b1, fz1, grad_needed):
+    """_summary_
+
+    :param NO1: _description_
+    :type NO1: _type_
+    :param NC: _description_
+    :type NC: _type_
+    :param NL: _description_
+    :type NL: _type_
+    :param alpha_C: _description_
+    :type alpha_C: _type_
+    :param alpha_L: _description_
+    :type alpha_L: _type_
+    :param fcoefs_amp: _description_
+    :type fcoefs_amp: _type_
+    :param fcoefs_mu: _description_
+    :type fcoefs_mu: _type_
+    :param fcoefs_sig: _description_
+    :type fcoefs_sig: _type_
+    :param lines_mu: _description_
+    :type lines_mu: _type_
+    :param lines_sig: _description_
+    :type lines_sig: _type_
+    :param norms: _description_
+    :type norms: _type_
+    :param b1: _description_
+    :type b1: _type_
+    :param fz1: _description_
+    :type fz1: _type_
+    :param grad_needed: _description_
+    :type grad_needed: _type_
+    :return: _description_
+    :rtype: _type_
+    """
     
     sqrt2pi = jnp.sqrt(2 * jnp.pi)
     
@@ -133,6 +191,43 @@ def kernelparts_diag_jx(NO1, NC, NL, alpha_C, alpha_L, fcoefs_amp, fcoefs_mu, fc
 @partial(jit, static_argnums=(0,1,2,3))
 def kernelparts_jax(NO1, NO2, NC, NL, alpha_C, alpha_L, fcoefs_amp, fcoefs_mu, fcoefs_sig, 
                     lines_mu, lines_sig, norms, b1, fz1, b2, fz2, grad_needed):
+    """_summary_
+
+    :param NO1: _description_
+    :type NO1: _type_
+    :param NO2: _description_
+    :type NO2: _type_
+    :param NC: _description_
+    :type NC: _type_
+    :param NL: _description_
+    :type NL: _type_
+    :param alpha_C: _description_
+    :type alpha_C: _type_
+    :param alpha_L: _description_
+    :type alpha_L: _type_
+    :param fcoefs_amp: _description_
+    :type fcoefs_amp: _type_
+    :param fcoefs_mu: _description_
+    :type fcoefs_mu: _type_
+    :param fcoefs_sig: _description_
+    :type fcoefs_sig: _type_
+    :param lines_mu: _description_
+    :type lines_mu: _type_
+    :param lines_sig: _description_
+    :type lines_sig: _type_
+    :param norms: _description_
+    :type norms: _type_
+    :param b1: _description_
+    :type b1: _type_
+    :param fz1: _description_
+    :type fz1: _type_
+    :param b2: _description_
+    :type b2: _type_
+    :param fz2: _description_
+    :type fz2: _type_
+    :param grad_needed: _description_
+    :type grad_needed: _type_
+    """
 
     def compute_sigma(opz1, opz2, sig1, sig2):
         return jnp.sqrt(opz1**2 * sig2**2 + opz2**2 * sig1**2 + (opz1 * opz2 * alpha_C)**2)
