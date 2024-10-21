@@ -1,3 +1,13 @@
+# test_photoz_kernels_jx : test jax part of the kernel
+# and integrate tests  implemented in test_photoz_kernels.py
+
+
+# standard part in numpy framework
+import numpy as np
+from delight.utils import *
+from delight.photoz_kernels import Photoz_mean_function, Photoz_kernel
+
+# jaxified part
 import pytest
 import jax.numpy as jnp
 from delight.photoz_kernels_jx import kernel_parts_interp_jx  # Remplacez par le bon chemin d'importation
@@ -63,3 +73,29 @@ def test_kernel_parts_interp_jx_large_input():
     assert result.shape == (NO1, NO2), f"Shape incorrecte pour grand jeu de données, attendu {(NO1, NO2)}, mais obtenu {result.shape}"
 
 
+# Start to implement the functions implemented in test_photoz_kernels.py
+
+size = 5
+NREPEAT = 2
+numBands = 2
+numLines = 3
+numCoefs = 5
+relative_accuracy = 0.1
+
+
+def test_kernel():
+    """Test if the Kernel can be created
+    """
+
+    for i in range(NREPEAT):
+        X = random_X_bzl(size, numBands=numBands)
+
+        fcoefs_amp, fcoefs_mu, fcoefs_sig = random_filtercoefs(numBands, numCoefs)
+        lines_mu, lines_sig = random_linecoefs(numLines)
+        var_C, var_L, alpha_C, alpha_L, alpha_T = random_hyperparams()
+        print('Failed with params:', var_C, var_L, alpha_C, alpha_L, alpha_T)
+
+        gp = Photoz_kernel(fcoefs_amp, fcoefs_mu, fcoefs_sig,
+                           lines_mu, lines_sig, var_C, var_L,
+                           alpha_C, alpha_L, alpha_T,
+                           use_interpolators=True)

@@ -56,9 +56,9 @@ def kernel_parts_interp(
 
 
 def kernelparts_diag(
-        int NO1:int, NC:int, NL:int,
-        alpha_C:double , 
-        alpha_L: double,
+        NO1:int, NC:int, NL:int,
+        alpha_C:float , 
+        alpha_L: float,
         fcoefs_amp:np.ndarray,
         fcoefs_mu:np.ndarray,
         fcoefs_sig:np.ndarray,
@@ -78,8 +78,8 @@ def kernelparts_diag(
         intNO1 (int): _description_
         NC (int): _description_
         NL (int): _description_
-        alpha_C (double): _description_
-        alpha_L (double): _description_
+        alpha_C (float): _description_
+        alpha_L (float): _description_
         fcoefs_amp (np.ndarray): _description_
         fcoefs_mu (np.ndarray): _description_
         fcoefs_sig (np.ndarray): _description_
@@ -98,7 +98,7 @@ def kernelparts_diag(
         np.ndarray,np.ndarray,np.ndarray: _description_
     """
 
-    sqrt2pi = sqrt(2 * M_PI)
+    sqrt2pi = np.sqrt(2 * M_PI)
     #cdef int l1, l2, o1, i, j
     #cdef double theexp, opz1, opz2, mu1, mu2, sig1, sig2, amp1, amp2, sigma, mul1, mul2
 
@@ -115,27 +115,27 @@ def kernelparts_diag(
                 mu2 = fcoefs_mu[b1[o1],j]
                 amp2 = fcoefs_amp[b1[o1],j]
                 sig2 = fcoefs_sig[b1[o1],j]
-                sigma = sqrt( pow(opz1*sig2,2) + pow(opz2*sig1,2) + pow(opz1*opz2*alpha_C,2) )
-                theexp = amp1 * amp2 * 2 * M_PI * sig1 * sig2 * exp(-0.5*pow((opz1*mu2 - opz2*mu1)/sigma,2)) / sigma
+                sigma = np.sqrt( np.power(opz1*sig2,2) + np.power(opz2*sig1,2) + np.power(opz1*opz2*alpha_C,2) )
+                theexp = amp1 * amp2 * 2 * M_PI * sig1 * sig2 * np.exp(-0.5*np.power((opz1*mu2 - opz2*mu1)/sigma,2)) / sigma
                 KC[o1] += alpha_C * theexp
                 if grad_needed is True:
-                    D_alpha_C[o1] += theexp * (1 - pow(alpha_C*opz1*opz2/sigma,2) + pow(alpha_C*(opz1*mu2 - opz2*mu1)*opz1*opz2,2) /pow(sigma,4)  )
+                    D_alpha_C[o1] += theexp * (1 - np.power(alpha_C*opz1*opz2/sigma,2) + np.power(alpha_C*(opz1*mu2 - opz2*mu1)*opz1*opz2,2) /np.power(sigma,4)  )
 
                 if NL > 0:
                     for l1 in range(NL):
                         mul1 = lines_mu[l1]
                         for l2 in range(l1):
                             mul2 = lines_mu[l2]
-                            KL[o1] += 2 * amp1 * amp2 * exp(-0.5*(pow((mu1 - opz1*mul1)/sig1,2) + pow((mu2 - opz2*mul2)/sig2,2) + pow((mul1-mul2)/alpha_L,2)))
+                            KL[o1] += 2 * amp1 * amp2 * np.exp(-0.5*(np.power((mu1 - opz1*mul1)/sig1,2) + np.power((mu2 - opz2*mul2)/sig2,2) + np.power((mul1-mul2)/alpha_L,2)))
                             if grad_needed is True:
-                                D_alpha_L[o1] += 2 * amp1 * amp2 * exp(-0.5*(pow((mu1 - opz1*mul1)/sig1,2) + pow((mu2 - opz2*mul2)/sig2,2) + pow((mul1-mul2)/alpha_L,2))) * pow(mul1-mul2,2) / pow(alpha_L,3)
+                                D_alpha_L[o1] += 2 * amp1 * amp2 * np.exp(-0.5*(np.power((mu1 - opz1*mul1)/sig1,2) + np.power((mu2 - opz2*mul2)/sig2,2) + np.power((mul1-mul2)/alpha_L,2))) * np.power(mul1-mul2,2) / np.power(alpha_L,3)
 
                         # Last term needed once
                         l2 = l1
                         mul2 = lines_mu[l2]
-                        KL[o1] += amp1 * amp2 * exp(-0.5*(pow((mu1 - opz1*mul1)/sig1,2) + pow((mu2 - opz2*mul2)/sig2,2) + pow((mul1-mul2)/alpha_L,2)))
+                        KL[o1] += amp1 * amp2 * np.exp(-0.5*(np.power((mu1 - opz1*mul1)/sig1,2) + np.power((mu2 - opz2*mul2)/sig2,2) + np.power((mul1-mul2)/alpha_L,2)))
                         if grad_needed is True:
-                            D_alpha_L[o1] += amp1 * amp2 * exp(-0.5*(pow((mu1 - opz1*mul1)/sig1,2) + pow((mu2 - opz2*mul2)/sig2,2) + pow((mul1-mul2)/alpha_L,2))) * pow(mul1-mul2,2) / pow(alpha_L,3)
+                            D_alpha_L[o1] += amp1 * amp2 * np.exp(-0.5*(np.power((mu1 - opz1*mul1)/sig1,2) + np.power((mu2 - opz2*mul2)/sig2,2) + np.power((mul1-mul2)/alpha_L,2))) * np.power(mul1-mul2,2) / np.power(alpha_L,3)
 
         KC[o1] /= norms[b1[o1]] * norms[b1[o1]]
         KL[o1] /= norms[b1[o1]] * norms[b1[o1]]
@@ -152,8 +152,8 @@ def kernelparts(
         NO2:int, 
         NC:int, 
         NL:int,
-        alpha_C:double, 
-        alpha_L:double,
+        alpha_C:float, 
+        alpha_L:float,
         fcoefs_amp:np.ndarray,
         fcoefs_mu:np.ndarray,
         fcoefs_sig:np.ndarray,
@@ -162,7 +162,7 @@ def kernelparts(
         norms:np.ndarray,
         b1:np.ndarray,
         fz1:np.ndarray,
-        b2:np.darray,
+        b2:np.ndarray,
         fz2:np.ndarray,
         grad_needed:bool,
         KL:np.ndarray,
@@ -180,7 +180,7 @@ def kernelparts(
         np (_type_): _description_
     """
 
-    sqrt2pi = sqrt(2 * M_PI)
+    sqrt2pi = np.sqrt(2 * M_PI)
     #cdef int l1, l2, o1, o2, i, j
     #cdef double theexp, opz1, opz2, mu1, mu2, amp1, amp2, sig1, sig2, sigma, mul1, mul2
     #, sigl1, sigl2
@@ -203,12 +203,12 @@ def kernelparts(
                     mu2 = fcoefs_mu[b2[o2],j]
                     amp2 = fcoefs_amp[b2[o2],j]
                     sig2 = fcoefs_sig[b2[o2],j]
-                    sigma = sqrt( pow(opz1*sig2,2) + pow(opz2*sig1,2) + pow(opz1*opz2*alpha_C,2) )
-                    theexp = amp1 * amp2 * 2 * M_PI * sig1 * sig2 * exp(-0.5*pow((opz1*mu2 - opz2*mu1)/sigma,2)) / sigma
+                    sigma = np.sqrt( np.power(opz1*sig2,2) + np.power(opz2*sig1,2) + np.power(opz1*opz2*alpha_C,2) )
+                    theexp = amp1 * amp2 * 2 * M_PI * sig1 * sig2 * np.exp(-0.5*np.power((opz1*mu2 - opz2*mu1)/sigma,2)) / sigma
                     KC[o1,o2] += alpha_C * theexp
                     if grad_needed is True:
-                        D_alpha_C[o1,o2] += theexp * (1 - pow(alpha_C*opz1*opz2/sigma,2)  + pow(alpha_C*(opz1*mu2 - opz2*mu1)*opz1*opz2,2) /pow(sigma,4)  )
-                        D_alpha_z[o1,o2] += alpha_C * theexp * ( (sig2**2 * opz1 + opz1 * opz2**2 * alpha_C**2) * ((mu2*opz1 - mu1*opz2)**2 / pow(sigma,4)  -  1 / sigma**2) \
+                        D_alpha_C[o1,o2] += theexp * (1 - np.power(alpha_C*opz1*opz2/sigma,2)  + np.power(alpha_C*(opz1*mu2 - opz2*mu1)*opz1*opz2,2) /np.power(sigma,4)  )
+                        D_alpha_z[o1,o2] += alpha_C * theexp * ( (sig2**2 * opz1 + opz1 * opz2**2 * alpha_C**2) * ((mu2*opz1 - mu1*opz2)**2 / np.power(sigma,4)  -  1 / sigma**2) \
                               - mu2 * (mu2*opz1 - mu1*opz2) / sigma**2 )
 
                     if NL > 0:
@@ -216,16 +216,16 @@ def kernelparts(
                             mul1 = lines_mu[l1]
                             for l2 in range(l1):
                                 mul2 = lines_mu[l2]
-                                KL[o1,o2] += 2 * amp1 * amp2 * exp(-0.5*(pow((mu1 - opz1*mul1)/sig1,2) + pow((mu2 - opz2*mul2)/sig2,2) + pow((mul1-mul2)/alpha_L,2)))
+                                KL[o1,o2] += 2 * amp1 * amp2 * np.exp(-0.5*(np.power((mu1 - opz1*mul1)/sig1,2) + np.power((mu2 - opz2*mul2)/sig2,2) + np.power((mul1-mul2)/alpha_L,2)))
                                 if grad_needed is True:
-                                    D_alpha_L[o1,o2] += 2 * amp1 * amp2 * exp(-0.5*(pow((mu1 - opz1*mul1)/sig1,2) + pow((mu2 - opz2*mul2)/sig2,2) + pow((mul1-mul2)/alpha_L,2))) * pow(mul1-mul2,2) / pow(alpha_L,3)
+                                    D_alpha_L[o1,o2] += 2 * amp1 * amp2 * np.exp(-0.5*(np.power((mu1 - opz1*mul1)/sig1,2) + np.power((mu2 - opz2*mul2)/sig2,2) + np.power((mul1-mul2)/alpha_L,2))) * np.power(mul1-mul2,2) / np.power(alpha_L,3)
 
                             # Last term needed once
                             l2 = l1
                             mul2 = lines_mu[l2]
-                            KL[o1,o2] += amp1 * amp2 * exp(-0.5*(pow((mu1 - opz1*mul1)/sig1,2) + pow((mu2 - opz2*mul2)/sig2,2) + pow((mul1-mul2)/alpha_L,2)))
+                            KL[o1,o2] += amp1 * amp2 * np.exp(-0.5*(np.power((mu1 - opz1*mul1)/sig1,2) + np.power((mu2 - opz2*mul2)/sig2,2) + np.power((mul1-mul2)/alpha_L,2)))
                             if grad_needed is True:
-                                D_alpha_L[o1,o2] += amp1 * amp2 * exp(-0.5*(pow((mu1 - opz1*mul1)/sig1,2) + pow((mu2 - opz2*mul2)/sig2,2) + pow((mul1-mul2)/alpha_L,2))) * pow(mul1-mul2,2) / pow(alpha_L,3)
+                                D_alpha_L[o1,o2] += amp1 * amp2 * np.exp(-0.5*(np.power((mu1 - opz1*mul1)/sig1,2) + np.power((mu2 - opz2*mul2)/sig2,2) + np.power((mul1-mul2)/alpha_L,2))) * np.power(mul1-mul2,2) / np.power(alpha_L,3)
 
             KC[o1,o2] /= norms[b1[o1]] * norms[b2[o2]]
             KL[o1,o2] /= norms[b1[o1]] * norms[b2[o2]]

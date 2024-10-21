@@ -393,7 +393,7 @@ class Photoz_kernel:
             D_alpha_C_grid, D_alpha_L_grid, D_alpha_z_grid\
                 = np.zeros(ts), np.zeros(ts), np.zeros(ts)
             b1_grid = np.repeat(b1, self.nz).astype(int)
-            KL_grid,,KC_grid,D_alpha_C_grid,D_alpha_L_grid = \
+            KL_grid,KC_grid,D_alpha_C_grid,D_alpha_L_grid = \
                 kernelparts_diag(self.nz, self.numCoefs, self.numLines,
                              self.alpha_C, self.alpha_L,
                              self.fcoefs_amp, self.fcoefs_mu,
