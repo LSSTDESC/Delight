@@ -1,57 +1,49 @@
-# Delight
-**Photometric redshift via Gaussian processes with physical kernels.**
 
-Read the documentation here: [http://delight.readthedocs.io](http://delight.readthedocs.io)
+# delight
 
-*Warning: this code is still in active development and is not quite ready to be blindly applied to arbitrary photometric galaxy surveys. But this day will come.*
+[![Template](https://img.shields.io/badge/Template-LINCC%20Frameworks%20Python%20Project%20Template-brightgreen)](https://lincc-ppt.readthedocs.io/en/latest/)
 
-[![alt tag](http://img.shields.io/badge/license-MIT-blue.svg?style=flat)](https://github.com/ixkael/Delight/blob/master/LICENSE)
-[![alt tag](https://travis-ci.org/ixkael/Delight.svg?branch=master)](https://travis-ci.org/ixkael/Delight)
-[![Documentation Status](https://readthedocs.org/projects/delight/badge/?version=latest&style=flat)](http://delight.readthedocs.io/en/latest/?badge=latest)
-[![Latest PDF](https://img.shields.io/badge/PDF-latest-orange.svg)](https://github.com/ixkael/Delight/blob/master/paper/PhotoZviaGP_paper.pdf)
-[![Coverage Status](https://coveralls.io/repos/github/ixkael/Delight/badge.svg?branch=master)](https://coveralls.io/github/ixkael/Delight?branch=master)
+[![PyPI](https://img.shields.io/pypi/v/delight?color=blue&logo=pypi&logoColor=white)](https://pypi.org/project/delight/)
+[![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/LSSTDESC/delight/smoke-test.yml)](https://github.com/LSSTDESC/delight/actions/workflows/smoke-test.yml)
+[![Codecov](https://codecov.io/gh/LSSTDESC/delight/branch/main/graph/badge.svg)](https://codecov.io/gh/LSSTDESC/delight)
+[![Read The Docs](https://img.shields.io/readthedocs/delight)](https://delight.readthedocs.io/)
+[![Benchmarks](https://img.shields.io/github/actions/workflow/status/LSSTDESC/delight/asv-main.yml?label=benchmarks)](https://LSSTDESC.github.io/delight/)
 
-**Tests**: pytest for unit tests, PEP8 for code style, coveralls for test coverage.
+This project was automatically generated using the LINCC-Frameworks 
+[python-project-template](https://github.com/lincc-frameworks/python-project-template).
 
-## Content
+A repository badge was added to show that this project uses the python-project-template, however it's up to
+you whether or not you'd like to display it!
 
-**./paper/**: journal paper describing the method </br>
-**./delight/**: main code (Python/Cython) </br>
-**./tests/**: test suite for the main code </br>
-**./notebooks/**: demo notebooks using delight </br>
-**./data/**: some useful inputs for tests/demos </br>
-**./docs/**: documentation </br>
-**./other/**: useful mathematica notebooks, etc </br>
+For more information about the project template see the 
+[documentation](https://lincc-ppt.readthedocs.io/en/latest/).
 
-## Requirements
+## Dev Guide - Getting Started
 
-Python 3.5, cython, numpy, scipy, pytest, pylint, coveralls, matplotlib, astropy, mpi4py </br>
+Before installing any dependencies or writing code, it's a great idea to create a
+virtual environment. LINCC-Frameworks engineers primarily use `conda` to manage virtual
+environments. If you have conda installed locally, you can run the following to
+create and activate a new environment.
 
-## Authors
+```
+>> conda create -n <env_name> python=3.10
+>> conda activate <env_name>
+```
 
-Boris Leistedt (NYU) </br>
-David W. Hogg (NYU) (Flatiron)
+Once you have created a new environment, you can install this project for local
+development using the following commands:
 
-Please cite [Leistedt and Hogg (2016)]
-(https://arxiv.org/abs/1612.00847) if you use this code your
-research. The BibTeX entry is:
+```
+>> ./.setup_dev.sh
+>> conda install pandoc
+```
 
-    @article{delight,
-        author  = "Boris Leistedt and David W. Hogg",
-        title   = "Data-driven, Interpretable Photometric Redshifts Trained on Heterogeneous and Unrepresentative Data",
-        journal = "The Astrophysical Journal",
-        volume  = "838",
-        number  = "1",
-        pages   = "5",
-        url     = "http://stacks.iop.org/0004-637X/838/i=1/a=5",
-        year    = "2017",
-        eprint         = "1612.00847",
-        archivePrefix  = "arXiv",
-        primaryClass   = "astro-ph.CO",
-        SLACcitation   = "%%CITATION = ARXIV:1612.00847;%%"
-    }
-
-
-## License
-
-Copyright 2016-2017 the authors. The code in this repository is released under the open-source MIT License. See the file LICENSE for more details.
+Notes:
+1. `./.setup_dev.sh` will initialize pre-commit for this local repository, so
+   that a set of tests will be run prior to completing a local commit. For more
+   information, see the Python Project Template documentation on 
+   [pre-commit](https://lincc-ppt.readthedocs.io/en/latest/practices/precommit.html)
+2. Install `pandoc` allows you to verify that automatic rendering of Jupyter notebooks
+   into documentation for ReadTheDocs works as expected. For more information, see
+   the Python Project Template documentation on
+   [Sphinx and Python Notebooks](https://lincc-ppt.readthedocs.io/en/latest/practices/sphinx.html#python-notebooks)
