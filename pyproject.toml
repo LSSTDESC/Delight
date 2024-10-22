@@ -1,5 +1,70 @@
-# These are needed to run setup.py and pip
-# setuptools and wheel are needed for any of this to run. Cython, numpy,
-# and sphinx are specific dependencies for this setup.py
+[project]
+name = "desc-delight"
+requires-python = ">=3.9"
+license = {file = "LICENSE"}
+readme = "README.md"
+authors = [
+    { name = "Boris Leistedt, LSST Dark Energy Science Collaboration (DESC)", email = "later@later.com" }
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "License :: OSI Approved :: MIT License",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+]
+version = "1.0.2"
+dependencies = [
+    "astropy",
+    "cython<3.0",
+    "matplotlib",
+    "numpy<2.0",
+    "scipy>=1.9.0",
+]
+
+
+# On a mac, install optional dependencies with `pip install '.[dev]'` (include the single quotes)
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-cov", # Used to report total code coverage
+    "pylint" # Used for static linting of files
+]
+
+
 [build-system]
-requires = ["setuptools>=50.0", "wheel", "Cython", "numpy", "sphinx"]
+requires = [
+    "setuptools>=62", # Used to build and package the Python project
+    "setuptools_scm>=6.2", # Gets release version from git. Makes it available programmatically
+    "astropy",
+    "cython",
+    "numpy<2.0",
+    "scipy",
+]
+build-backend = "setuptools.build_meta"
+
+
+
+
+[tool.setuptools]
+#ext-modules = [
+#    {name = "delight.photoz_kernels_cy", source = ["delight/photoz_kernels_cy.pyx"], include_dirs = [numpy.get_include()],
+#    extra_link_args = ['-f openmp'],
+#    extra_compile_args = ["-ffast-math", "-fopenmp",
+#                           "-Wno-uninitialized",
+#                           "-Wno-maybe-uninitialized",
+#                           "-Wno-unused-function"],
+#    libraries = ["m"]},
+    #{
+    #name = "delight.utils_cy",
+    #source = "delight/utils_cy.pyx",
+    #include_dirs = [numpy.get_include()],
+    #extra_link_args = ['-f openmp'],
+    #extra_compile_args = ["-ffast-math", "-fopenmp",
+    #                       "-Wno-uninitialized",
+    #                       "-Wno-maybe-uninitialized",
+    #                       "-Wno-unused-function"],
+    #libraries = ["m"]
+    #}   
+#]

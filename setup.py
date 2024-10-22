@@ -1,9 +1,10 @@
 #from distutils.core import setup 
 
-from setuptools import setup, find_packages, find_namespace_packages
+from setuptools import setup, find_packages, find_namespace_packages, Extension
+from Cython.Build import cythonize
 
 
-from distutils.extension import Extension
+#from distutils.extension import Extension
 from Cython.Distutils import build_ext
 import numpy
 # from sphinx.setup_command import BuildDoc
@@ -35,10 +36,10 @@ args = {
     }
 
 ext_modules = [
-    Extension("delight.photoz_kernels_cy",
-              ["delight/photoz_kernels_cy.pyx"], **args),
-    Extension("delight.utils_cy",
-              ["delight/utils_cy.pyx"], **args)
+    cythonize(Extension("delight.photoz_kernels_cy",
+              ["delight/photoz_kernels_cy.pyx"], **args)),
+    cythonize(Extension("delight.utils_cy",
+              ["delight/utils_cy.pyx"], **args))
     ]
 
 setup(
