@@ -1,8 +1,8 @@
 # from distutils.core import setup
 
+import numpy
 from Cython.Build import cythonize
 from setuptools import Extension, setup
-import numpy
 
 ext_modules = [
     Extension(
@@ -21,7 +21,4 @@ ext_modules = [
     ),
 ]
 
-setup(
-    ext_modules=cythonize(ext_modules),
-    include_dirs=[numpy.get_include()]
-)
+setup(ext_modules=cythonize(ext_modules), include_dirs=[numpy.get_include()])
