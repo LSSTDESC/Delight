@@ -53,10 +53,12 @@ build-backend = "setuptools.build_meta"
 
 
 [tool.setuptools.packages.find]
-where = ["delight/"]
-include = ["delight.*"]
+where = ["src"]
+include = ["delight","delight.interfaces"]
 #namespaces = true
 
+#[tool.setuptools]
+#packages = ["delight","delight.interfaces"]
 
 [tool.setuptools.exclude-package-data]
 delight = ["data"]

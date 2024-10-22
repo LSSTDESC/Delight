@@ -7,14 +7,14 @@ import numpy
 ext_modules = [
     Extension(
         "delight.photoz_kernels_cy",
-        ["delight/photoz_kernels_cy.pyx"],
+        ["src/delight/photoz_kernels_cy.pyx"],
         include_dirs=[numpy.get_include()],
         define_macros=[("CYTHON_LIMITED_API", "1")],
         py_limited_api=True,
     ),
     Extension(
         "delight.utils_cy",
-        ["delight/utils_cy.pyx"],
+        ["src/delight/utils_cy.pyx"],
         include_dirs=[numpy.get_include()],
         define_macros=[("CYTHON_LIMITED_API", "1")],
         py_limited_api=True,
