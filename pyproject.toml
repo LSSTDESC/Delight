@@ -25,6 +25,7 @@ dependencies = [
 "matplotlib",
 "astropy",
 "sphinx",
+"tables_io"
 ]
 
 [project.urls]

@@ -97,6 +97,22 @@ or
 
 ### Run the tests
 
+#### Basic tests
+
+Very basic tests can be run from top level of `Delight` package using the scripts in `scripts/` as follow:
+
+```
+python scripts/processFilters.py tests/parametersTest.cfg
+python scripts/processSEDs.py tests/parametersTest.cfg
+python scripts/simulateWithSEDs.py tests/parametersTest.cfg
+```
+
+#### Unitary tests
+
+```
+pytest -v tests/*.py
+```
+
 ### Install the Delight documentation
 
 - install the python package ``pandoc``either with conda or with pip,
