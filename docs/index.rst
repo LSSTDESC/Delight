@@ -6,8 +6,23 @@
 Welcome to delight's documentation!
 ========================================================================================
 
-Dev Guide - Getting Started
----------------------------
+
+
+Contents:
+
+.. toctree::
+   :maxdepth: 1
+
+   install
+   code
+   Tutorial - getting started with Delight
+   Example - filling missing bands
+
+
+
+
+LINCC Frameworks Dev Guide - Getting Started
+---------------------------------------------
 
 Before installing any dependencies or writing code, it's a great idea to create a
 virtual environment. LINCC-Frameworks engineers primarily use `conda` to manage virtual
@@ -43,8 +58,7 @@ Notes:
    `Sphinx and Python Notebooks <https://lincc-ppt.readthedocs.io/en/latest/practices/sphinx.html#python-notebooks>`_.
 
 
-.. toctree::
-   :hidden:
+
 
    Home page <self>
    API Reference <autoapi/index>
