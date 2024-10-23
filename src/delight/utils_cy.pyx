@@ -1,10 +1,12 @@
-#cython: boundscheck=False, wraparound=False, nonecheck=False, cdivision=True
+#cython: language_level=3, boundscheck=False, wraparound=False, nonecheck=False, cdivision=True
+# define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 cimport numpy as np
 from cython.parallel import prange
 from cpython cimport bool
 cimport cython
 from libc.math cimport sqrt, M_PI, exp, pow, log
 from libc.stdlib cimport malloc, free
+
 
 
 def find_positions(
