@@ -1,5 +1,0 @@
-# These are needed to run setup.py and pip
-# setuptools and wheel are needed for any of this to run. Cython, numpy,
-# and sphinx are specific dependencies for this setup.py
-[build-system]
-requires = ["setuptools>=50.0", "wheel", "Cython", "numpy", "sphinx"]
