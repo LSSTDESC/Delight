@@ -25,5 +25,6 @@ setup(ext_modules=cythonize(ext_modules),
       include_dirs=[numpy.get_include()],
       packages=find_packages(where="src"),
       package_dir={"": "src"},
+      compiler_directives={"language_level": 3, "profile": False},
       )
 
