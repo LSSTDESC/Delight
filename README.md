@@ -95,6 +95,36 @@ or
 >> pip install -e .
 ```
 
+### Run the tests
+
+### Install the doc
+
+- install pandoc
+- install sphinx packages as follow:
+
+Either do at top level (same as ``pyproject.toml``) by selecting the packages under the ``[doc]`` section inside
+the ``pyproject.toml`` project configuration  file
+```
+>> pip install -e .'[doc]'
+```
+
+or under ``docs/``  by selecting the sphinx packages specified in the ``requirements.txt`` file :
+
+````
+>> pip install -r requirements.txt
+```
+
+Then run the sphinx command accordig the instruction (https://lincc-ppt.readthedocs.io/en/latest/practices/sphinx.html):
+
+```
+>> python -m sphinx -T -E -b html -d _build/doctrees -D language=en . ../_readthedocs/html
+```
+
+And open the sphinx documentation:
+
+```
+>>  557  open ../_readthedocs/html/index.html 
+```
 
 ## More on LINCC Framework
 

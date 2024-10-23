@@ -40,6 +40,17 @@ dev = [
     "pytest-cov", # Used to report total code coverage
     "ruff", # Used for static linting of files
 ]
+doc = [
+"ipykernel",
+"ipython",
+"jupytext",
+"nbconvert",
+"nbsphinx",
+"sphinx",
+"sphinx-autoapi",
+"sphinx-copybutton",
+"sphinx-rtd-theme",
+]
 
 [build-system]
 requires = [

@@ -29,6 +29,8 @@ extensions = ["sphinx.ext.mathjax", "sphinx.ext.napoleon", "sphinx.ext.viewcode"
 extensions.append("autoapi.extension")
 extensions.append("nbsphinx")
 
+autoapi_dirs = ['src']
+
 # -- sphinx-copybutton configuration ----------------------------------------
 extensions.append("sphinx_copybutton")
 ## sets up the expected prompt text from console blocks, and excludes it from
