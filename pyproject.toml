@@ -66,7 +66,7 @@ delight = ["data"]
 
 
 [tool.setuptools_scm]
-write_to = "delight/_version.py"
+write_to = "src/_version.py"
 
 [tool.pytest.ini_options]
 testpaths = [
@@ -128,4 +128,4 @@ ignore = [
 ]
 
 [tool.coverage.run]
-omit=["delight/_version.py"]
+omit=["src/_version.py"]
