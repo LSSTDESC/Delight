@@ -137,13 +137,21 @@ Then run the sphinx command accordig the [sphinx documentation](https://lincc-pp
 >> python -m sphinx -T -E -b html -d _build/doctrees -D language=en . ../_readthedocs/html
 ```
 
+
+or more simply
+
+```
+>> make html
+```
+
+
 And open the sphinx documentation:
 
 ```
 >> open ../_readthedocs/html/index.html 
 ```
 
-## More on LINCC Framework
+### More on the python project LINCC Framework
 
 
 This project was automatically generated using the LINCC-Frameworks 
@@ -155,7 +163,7 @@ you whether or not you'd like to display it!
 For more information about the project template see the 
 [documentation](https://lincc-ppt.readthedocs.io/en/latest/).
 
-## Dev Guide - Getting Started
+#### Dev Guide - Getting Started
 
 Before installing any dependencies or writing code, it's a great idea to create a
 virtual environment. LINCC-Frameworks engineers primarily use `conda` to manage virtual

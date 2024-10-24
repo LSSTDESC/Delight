@@ -31,6 +31,10 @@ extensions.append("nbsphinx")
 
 autoapi_dirs = ['src']
 
+# allow errors in notebooks during execution of notebooks
+nbsphinx_allow_errors = True
+
+
 # -- sphinx-copybutton configuration ----------------------------------------
 extensions.append("sphinx_copybutton")
 ## sets up the expected prompt text from console blocks, and excludes it from
