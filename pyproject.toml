@@ -4,7 +4,7 @@ name = "delight"
 license = {file = "LICENSE"}
 readme = "README.md"
 authors = [
-    { name = "Boris Leistedt", email = "sylvie.dagoret-campagne@ijclab.in2p3.fr" }
+    { name = "author:Boris Leistedt, maintainer inside DESC-RAIL framework Sylvie Dagoret-Campagne", email = "sylvie.dagoret-campagne@ijclab.in2p3.fr" }
 ]
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -25,7 +25,9 @@ dependencies = [
 "matplotlib",
 "astropy",
 "sphinx",
-"tables_io"
+"tables_io",
+"h5py",
+"logging",
 ]
 
 [project.urls]
