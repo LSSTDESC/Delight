@@ -1,4 +1,17 @@
+
 # Delight
+
+[![Template](https://img.shields.io/badge/Template-LINCC%20Frameworks%20Python%20Project%20Template-brightgreen)](https://lincc-ppt.readthedocs.io/en/latest/)
+
+[![PyPI](https://img.shields.io/pypi/v/delight?color=blue&logo=pypi&logoColor=white)](https://pypi.org/project/delight/)
+[![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/LSSTDESC/delight/smoke-test.yml)](https://github.com/LSSTDESC/delight/actions/workflows/smoke-test.yml)
+[![Codecov](https://codecov.io/gh/LSSTDESC/delight/branch/main/graph/badge.svg)](https://codecov.io/gh/LSSTDESC/delight)
+[![Read The Docs](https://img.shields.io/readthedocs/delight)](https://delight.readthedocs.io/)
+[![Benchmarks](https://img.shields.io/github/actions/workflow/status/LSSTDESC/delight/asv-main.yml?label=benchmarks)](https://LSSTDESC.github.io/delight/)
+
+
+
+
 **Photometric redshift via Gaussian processes with physical kernels.**
 
 Read the documentation here: [http://delight.readthedocs.io](http://delight.readthedocs.io)
@@ -55,3 +68,127 @@ research. The BibTeX entry is:
 ## License
 
 Copyright 2016-2017 the authors. The code in this repository is released under the open-source MIT License. See the file LICENSE for more details.
+
+
+## Installation and maintenance of this package
+
+This package is maintained by the LSSTDESC collaboration and the DESC-RAIL team.
+This project is handled under the LINCC-Framework.
+
+
+### Usual installation
+
+The package can be installed with a single command `pip`:
+
+```
+>> pip install .
+```
+
+or
+
+```
+>> pip install -e .
+```
+
+### Perform the control tests
+
+#### Basic user tests in python scripts
+
+Very basic tests can be run from top level of `Delight` package using the scripts in `scripts/` as follow:
+
+```
+python scripts/processFilters.py tests/parametersTest.cfg
+python scripts/processSEDs.py tests/parametersTest.cfg
+python scripts/simulateWithSEDs.py tests/parametersTest.cfg
+```
+
+
+
+#### Unitary tests
+
+```
+pytest -v tests/*.py
+```
+
+### Install the Delight documentation
+
+- install the python package ``pandoc``either with conda or with pip,
+- install sphinx packages as follow:
+
+
+
+Under ``docs/``  by selecting the sphinx packages specified in the ``requirements.txt`` file :
+
+```
+>> pip install -r requirements.txt
+```
+
+(In principe one should be able to install doc environnement from `pyproject.toml` file as follow but some sphinx packages may be missing.)
+
+```
+>> pip install -e .'[doc]'
+```
+Then build the sphinx doc by doing:
+
+```
+>> make html
+```
+
+And finnally open the sphinx documentation:
+
+```
+>> open ../_readthedocs/html/index.html 
+```
+
+(For developpers, if you plan to modify the package, please install  the pre-commit hook. Refer to the sphinx doc).
+
+### Learn through the tutorials
+
+Some basic tutorials are provided in `docs/notebooks`:
+
+    docs/notebooks/Tutorial-getting-started-with-Delight.ipynb
+    docs/notebooks/Tutorial_interfaces_rail-with-Delight.ipynb
+
+
+### More on the python project LINCC Framework
+
+
+This project was automatically generated using the LINCC-Frameworks 
+[python-project-template](https://github.com/lincc-frameworks/python-project-template).
+
+A repository badge was added to show that this project uses the python-project-template, however it's up to
+you whether or not you'd like to display it!
+
+For more information about the project template see the 
+[documentation](https://lincc-ppt.readthedocs.io/en/latest/).
+
+#### Dev Guide - Getting Started
+
+Before installing any dependencies or writing code, it's a great idea to create a
+virtual environment. LINCC-Frameworks engineers primarily use `conda` to manage virtual
+environments. If you have conda installed locally, you can run the following to
+create and activate a new environment.
+
+```
+>> conda create -n <env_name> python=3.10
+>> conda activate <env_name>
+```
+
+Once you have created a new environment, you can install this project for local
+development using the following commands:
+
+```
+>> ./.setup_dev.sh
+>> conda install pandoc
+```
+
+Notes:
+
+1. `./.setup_dev.sh` will initialize pre-commit for this local repository, so
+   that a set of tests will be run prior to completing a local commit. For more
+   information, see the Python Project Template documentation on 
+   [pre-commit](https://lincc-ppt.readthedocs.io/en/latest/practices/precommit.html)
+2. Install `pandoc` allows you to verify that automatic rendering of Jupyter notebooks
+   into documentation for ReadTheDocs works as expected. For more information, see
+   the Python Project Template documentation on
+   [Sphinx and Python Notebooks](https://lincc-ppt.readthedocs.io/en/latest/practices/sphinx.html#python-notebooks)

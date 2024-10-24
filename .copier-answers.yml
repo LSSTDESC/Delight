@@ -1,0 +1,10 @@
+# Changes here will be overwritten by Copier
+_commit: v2.0.3
+_src_path: gh:lincc-frameworks/python-project-template
+author_email: sylvie.dagoret-campagne@ijclab.in2p3.fr
+author_name: Boris Leistedt
+custom_install: false
+package_name: delight
+project_license: MIT
+project_name: delight
+project_organization: LSSTDESC

@@ -63,7 +63,7 @@ def test_find_positions():
 
     a = np.array([0., 1., 2., 3., 4.])
     b = np.array([0.5, 2.5, 3.0, 3.1, 4.0])
-    pos = np.zeros(b.size, dtype=np.long)
+    pos = np.zeros(b.size, dtype=np.longlong)
     find_positions(b.size, a.size, b, pos, a)
     np.testing.assert_almost_equal(pos, [0, 2, 2, 3, 3])
 
