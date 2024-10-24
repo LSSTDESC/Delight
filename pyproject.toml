@@ -27,7 +27,6 @@ dependencies = [
 "sphinx",
 "tables_io",
 "h5py",
-"logging",
 ]
 
 [project.urls]
