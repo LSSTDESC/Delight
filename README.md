@@ -118,38 +118,39 @@ pytest -v tests/*.py
 - install the python package ``pandoc``either with conda or with pip,
 - install sphinx packages as follow:
 
-Either do at top level (same as ``pyproject.toml``) by selecting the packages under the ``[doc]`` section inside
-the ``pyproject.toml`` project configuration  file
 
-```
->> pip install -e .'[doc]'
-```
 
-or under ``docs/``  by selecting the sphinx packages specified in the ``requirements.txt`` file :
+Under ``docs/``  by selecting the sphinx packages specified in the ``requirements.txt`` file :
 
 ```
 >> pip install -r requirements.txt
 ```
 
-Then run the sphinx command accordig the [sphinx documentation](https://lincc-ppt.readthedocs.io/en/latest/practices/sphinx.html):
+(In principe one should be able to install doc environnement from `pyproject.toml` file as follow but some sphinx packages may be missing.
+
 
 ```
->> python -m sphinx -T -E -b html -d _build/doctrees -D language=en . ../_readthedocs/html
+>> pip install -e .'[doc]'
 ```
 
+ )
 
-or more simply
+Then build the sphinx doc by doing:
 
 ```
 >> make html
 ```
 
-
-And open the sphinx documentation:
+And finnally open the sphinx documentation:
 
 ```
 >> open ../_readthedocs/html/index.html 
 ```
+
+
+### Experiment the tutorials
+
+
 
 ### More on the python project LINCC Framework
 
