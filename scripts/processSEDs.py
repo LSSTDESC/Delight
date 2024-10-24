@@ -2,6 +2,8 @@ import sys
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.interpolate import interp1d
+from scipy.integrate import trapezoid
+
 
 
 from delight.io import *
@@ -38,14 +40,16 @@ for sed_name in sed_names:
         # Only consider range where >1% max
         ind = np.where(yf > 0.01*np.max(yf))[0]
         lambdaMin, lambdaMax = xf[ind[0]], xf[ind[-1]]
-        norm = np.trapz(yf/xf, x=xf)
+        #norm = np.trapz(yf/xf, x=xf)
+        norm = trapezoid(yf/xf, x=xf)
 
         for iz in range(redshiftGrid.size):
             opz = (redshiftGrid[iz] + 1)
             xf_z = np.linspace(lambdaMin / opz, lambdaMax / opz, num=5000)
             yf_z = interp1d(xf / opz, yf)(xf_z)
             ysed = sed_interp(xf_z)
-            f_mod[iz, jf] = np.trapz(ysed * yf_z, x=xf_z) / norm
+            #f_mod[iz, jf] = np.trapz(ysed * yf_z, x=xf_z) / norm
+            f_mod[iz, jf] = trapezoid(ysed * yf_z, x=xf_z) / norm
             f_mod[iz, jf] *= opz**2. / DL(redshiftGrid[iz])**2. / (4*np.pi)
 
     np.savetxt(dir_seds + '/' + sed_name + '_fluxredshiftmod.txt', f_mod)

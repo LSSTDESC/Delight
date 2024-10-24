@@ -73,7 +73,7 @@ Copyright 2016-2017 the authors. The code in this repository is released under t
 ## Installation and maintenance of this package
 
 This package is maintained by the LSSTDESC collaboration and the DESC-RAIL team.
-This project in handle under the LINCC-Framework.
+This project is handled under the LINCC-Framework.
 
 
 ### Usual installation
@@ -95,9 +95,9 @@ or
 >> pip install -e .
 ```
 
-### Run the tests
+### Perform the control tests
 
-#### Basic tests
+#### Basic user tests
 
 Very basic tests can be run from top level of `Delight` package using the scripts in `scripts/` as follow:
 
@@ -147,6 +147,7 @@ And finnally open the sphinx documentation:
 >> open ../_readthedocs/html/index.html 
 ```
 
+(For developpers, if you plan to modify the package, please install  the pre-commit hook. Refer to the sphinx doc).
 
 ### Experiment the tutorials
 
