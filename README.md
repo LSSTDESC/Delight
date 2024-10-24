@@ -80,16 +80,11 @@ This project is handled under the LINCC-Framework.
 
 The package can be installed with a single command `pip`:
 
-
-
-
 ```
 >> pip install .
 ```
 
-
 or
-
 
 ```
 >> pip install -e .
@@ -97,7 +92,7 @@ or
 
 ### Perform the control tests
 
-#### Basic user tests
+#### Basic user tests in python scripts
 
 Very basic tests can be run from top level of `Delight` package using the scripts in `scripts/` as follow:
 
@@ -106,6 +101,8 @@ python scripts/processFilters.py tests/parametersTest.cfg
 python scripts/processSEDs.py tests/parametersTest.cfg
 python scripts/simulateWithSEDs.py tests/parametersTest.cfg
 ```
+
+
 
 #### Unitary tests
 
@@ -126,15 +123,11 @@ Under ``docs/``  by selecting the sphinx packages specified in the ``requirement
 >> pip install -r requirements.txt
 ```
 
-(In principe one should be able to install doc environnement from `pyproject.toml` file as follow but some sphinx packages may be missing.
-
+(In principe one should be able to install doc environnement from `pyproject.toml` file as follow but some sphinx packages may be missing.)
 
 ```
 >> pip install -e .'[doc]'
 ```
-
- )
-
 Then build the sphinx doc by doing:
 
 ```
@@ -149,8 +142,12 @@ And finnally open the sphinx documentation:
 
 (For developpers, if you plan to modify the package, please install  the pre-commit hook. Refer to the sphinx doc).
 
-### Experiment the tutorials
+### Learn through the tutorials
 
+Some basic tutorials are provided in `docs/notebooks`:
+
+    docs/notebooks/Tutorial-getting-started-with-Delight.ipynb
+    docs/notebooks/Tutorial_interfaces_rail-with-Delight.ipynb
 
 
 ### More on the python project LINCC Framework
@@ -186,6 +183,7 @@ development using the following commands:
 ```
 
 Notes:
+
 1. `./.setup_dev.sh` will initialize pre-commit for this local repository, so
    that a set of tests will be run prior to completing a local commit. For more
    information, see the Python Project Template documentation on 
