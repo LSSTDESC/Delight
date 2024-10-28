@@ -3,4 +3,4 @@ Notebooks
 
 .. toctree::
 
-    Introducing Jupyter Notebooks <notebooks/intro_notebook>
+    Tutorial with SDSS <notebooks/Tutorial-getting-started-with-Delight>

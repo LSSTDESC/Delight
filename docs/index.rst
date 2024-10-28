@@ -17,6 +17,7 @@ Contents:
    code
    Tutorial - getting started with Delight
    Example - filling missing bands
+   notebooks
 
 
 
