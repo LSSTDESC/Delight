@@ -8,6 +8,7 @@ from delight.posteriors import gaussian, gaussian2d
 from delight.utils_cy import approx_flux_likelihood_cy
 from delight.utils_cy import find_positions, bilininterp_precomputedbins
 from time import time
+import pytest
 
 relative_accuracy = 0.05
 

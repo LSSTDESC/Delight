@@ -4,6 +4,7 @@ import numpy as np
 from delight.priors import *
 from scipy.misc import derivative
 from delight.utils import derivative_test
+import pytest
 
 
 class SimpleChildModel(Model):
