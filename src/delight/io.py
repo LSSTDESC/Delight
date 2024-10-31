@@ -6,6 +6,8 @@ import collections
 import configparser
 import itertools
 from delight.utils import approx_DL
+import h5py
+
 from scipy.interpolate import interp1d
 
 
@@ -321,6 +323,147 @@ def getDataFromFile(params, firstLine, lastLine,
             for line in itertools.islice(f, firstLine, lastLine):
 
                 data = np.array(line.split(' '), dtype=float)
+                refFlux = data[refBandColumn]
+                normedRefFlux = refFlux * refBandNorm
+                if redshiftColumn >= 0:
+                    z = data[redshiftColumn]
+                else:
+                    z = -1
+
+                # drop bad values and find how many bands are valid
+                mask = np.isfinite(data[bandColumns])
+                mask &= np.isfinite(data[bandVarColumns])
+                mask &= data[bandColumns] > 0.0
+                mask &= data[bandVarColumns] > 0.0
+                bandsUsed = np.where(mask)[0]
+                numBandsUsed = mask.sum()
+
+                if z > -1:
+                    ell = normedRefFlux * 4 * np.pi \
+                        * params['fluxLuminosityNorm'] * DL(z)**2 * (1+z)
+
+                if (refFlux <= 0) or (not np.isfinite(refFlux))\
+                        or (z < 0) or (numBandsUsed <= 1):
+                    print("Skipping galaxy: refflux=", refFlux,
+                          "z=", z, "numBandsUsed=", numBandsUsed)
+                    continue  # not valid data - skip to next valid object
+
+                fluxes = data[bandColumns[mask]]
+                fluxesVar = data[bandVarColumns[mask]] +\
+                    (params['training_extraFracFluxError'] * fluxes)**2
+
+                if CV:
+                    maskCV = np.isfinite(data[bandColumnsCV])
+                    maskCV &= np.isfinite(data[bandVarColumnsCV])
+                    maskCV &= data[bandColumnsCV] > 0.0
+                    maskCV &= data[bandVarColumnsCV] > 0.0
+                    bandsUsedCV = np.where(maskCV)[0]
+                    numBandsUsedCV = maskCV.sum()
+                    fluxesCV = data[bandColumnsCV[maskCV]]
+                    fluxesCVVar = data[bandVarColumnsCV[maskCV]] +\
+                        (params['training_extraFracFluxError'] * fluxesCV)**2
+
+                if not getXY:
+
+                    if CV:
+                        yield z, normedRefFlux,\
+                            bandIndices[mask], fluxes, fluxesVar,\
+                            bandIndicesCV[maskCV], fluxesCV, fluxesCVVar
+                    else:
+                        yield z, normedRefFlux,\
+                            bandIndices[mask], fluxes, fluxesVar,\
+                            None, None, None
+
+                if getXY:
+
+                    Y = np.zeros((numBandsUsed, 1))
+                    Yvar = np.zeros((numBandsUsed, 1))
+                    X = np.ones((numBandsUsed, 3))
+                    for off, iband in enumerate(bandIndices[mask]):
+                        X[off, 0] = iband
+                        X[off, 1] = z
+                        X[off, 2] = ell
+                        Y[off, 0] = fluxes[off]
+                        Yvar[off, 0] = fluxesVar[off]
+
+                    if CV:
+                        yield z, normedRefFlux,\
+                            bandIndices[mask], fluxes, fluxesVar,\
+                            bandIndicesCV[maskCV], fluxesCV, fluxesCVVar,\
+                            X, Y, Yvar
+                    else:
+                        yield z, normedRefFlux,\
+                            bandIndices[mask], fluxes, fluxesVar,\
+                            None, None, None,\
+                            X, Y, Yvar
+
+
+def getDataFromFileh5(params, firstLine, lastLine,
+                    prefix="", ftype="catalog", getXY=True, CV=False):
+    """
+    Returns an iterator to parse an input catalog file.
+    Returns the fluxes, redshifts, etc, and also GP inputs if getXY=True.
+    Implemented to handle hdf5 file
+    """
+
+    if ftype == "gpparams":
+
+        # find the hdf5 file
+        hdf5file_fn =  os.path.basename(params[prefix+'paramFile']).split(".")[0]+".h5"
+        input_path = os.path.dirname(params[prefix+'paramFile'])
+        hdf5file_fullfn = os.path.join(input_path,hdf5file_fn)
+        with h5py.File(hdf5file_fullfn, 'r') as hdf5_file:
+            f_array = hdf5_file[prefix][:]
+
+        #with open(params[prefix+'paramFile']) as f:
+        #    for line in itertools.islice(f, firstLine, lastLine):
+            for irow in range(firstLine, lastLine):
+
+                #data = np.array(line.split(' '), dtype=float)
+                data = f_array[irow,:] 
+            
+                #data = np.fromstring(line, dtype=float, sep=' ')
+                B = int(data[0])
+                z = data[1]
+                ell = data[2]
+                bands = data[3:3+B]
+                flatarray = data[3+B:]
+                X = np.zeros((B, 3))
+                for off, iband in enumerate(bands):
+                    X[off, 0] = iband
+                    X[off, 1] = z
+                    X[off, 2] = ell
+
+                yield z, ell, bands, X, B, flatarray
+
+    if ftype == "catalog":
+
+        DL = approx_DL()
+        bandIndices, bandNames, bandColumns, bandVarColumns, redshiftColumn,\
+            refBandColumn = readColumnPositions(params, prefix=prefix)
+        bandCoefAmplitudes, bandCoefPositions, bandCoefWidths, norms\
+            = readBandCoefficients(params)
+        refBandNorm = norms[params['bandNames']
+                            .index(params[prefix+'referenceBand'])]
+
+        if CV:
+            bandIndicesCV, bandNamesCV, bandColumnsCV,\
+                bandVarColumnsCV, redshiftColumnCV =\
+                readColumnPositions(params, prefix=prefix+'CV_', refFlux=False)
+
+        hdf5file_fn =  os.path.basename(params[prefix+'catFile']).split(".")[0]+".h5"
+        input_path = os.path.dirname(params[prefix+'catFile'])
+        hdf5file_fullfn = os.path.join(input_path,hdf5file_fn)
+
+    
+        with h5py.File(hdf5file_fullfn, 'r') as hdf5_file:
+            f_array = hdf5_file[prefix][:]
+        #with open(params[prefix+'catFile']) as f:
+            #for line in itertools.islice(f, firstLine, lastLine):
+            for irow in range(firstLine, lastLine):
+
+                #data = np.array(line.split(' '), dtype=float)
+                data = f_array[irow,:] 
                 refFlux = data[refBandColumn]
                 normedRefFlux = refFlux * refBandNorm
                 if redshiftColumn >= 0:
