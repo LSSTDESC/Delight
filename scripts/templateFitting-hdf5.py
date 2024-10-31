@@ -59,7 +59,7 @@ localMetrics = np.zeros((numLines, numMetrics))
 
 # Now loop over target set to compute likelihood function
 loc = - 1
-trainingDataIter = getDataFromFile(params, firstLine, lastLine,
+trainingDataIter = getDataFromFileh5(params, firstLine, lastLine,
                                    prefix="target_", getXY=False)
 for z, normedRefFlux, bands, fluxes, fluxesVar,\
         bCV, fCV, fvCV in trainingDataIter:
