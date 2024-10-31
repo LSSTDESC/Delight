@@ -224,15 +224,44 @@ if threadNum == 0:
     fname = params['redshiftpdfFileComp'] if params['compressionFilesFound']\
         else params['redshiftpdfFile']
     
-
     np.savetxt(fname, globalPDFs, fmt=fmt)
 
-    
+    hdf5file_fn =  os.path.basename(fname).split(".")[0]+".h5"
+    output_path = os.path.dirname(fname)
+    hdf5file_fullfn = os.path.join(output_path , hdf5file_fn)
+    with h5py.File(hdf5file_fullfn, 'w') as hdf5_file:
+        hdf5_file.create_dataset('gp_pdfs_', data=globalPDFs)
+
+
+
 
     if redshiftsInTarget:
         np.savetxt(params['metricsFile'], globalMetrics, fmt=fmt)
+
+        hdf5file_fn =  os.path.basename(params['metricsFile']).split(".")[0]+".h5"
+        output_path = os.path.dirname(params['metricsFile'])
+        hdf5file_fullfn = os.path.join(output_path , hdf5file_fn)
+        with h5py.File(hdf5file_fullfn, 'w') as hdf5_file:
+            hdf5_file.create_dataset('gp_metrics_', data=globalMetrics)
+
+
+
     if params['useCompression'] and not params['compressionFilesFound']:
         np.savetxt(params['compressMargLikFile'],
                    globalCompEvidences, fmt=fmt)
+        
+        hdf5file_fn =  os.path.basename(params['compressMargLikFile']).split(".")[0]+".h5"
+        output_path = os.path.dirname(params['compressMargLikFile'])
+        hdf5file_fullfn = os.path.join(output_path , hdf5file_fn)
+        with h5py.File(hdf5file_fullfn, 'w') as hdf5_file:
+            hdf5_file.create_dataset('gp_evidences_', data=globalCompEvidences)
+
+
         np.savetxt(params['compressIndicesFile'],
                    globalCompressIndices, fmt="%i")
+        
+        hdf5file_fn =  os.path.basename(params['compressIndicesFile']).split(".")[0]+".h5"
+        output_path = os.path.dirname(params['compressIndicesFile'])
+        hdf5file_fullfn = os.path.join(output_path , hdf5file_fn)
+        with h5py.File(hdf5file_fullfn, 'w') as hdf5_file:
+            hdf5_file.create_dataset('gp_indices_', data=globalCompressIndices)
