@@ -47,6 +47,7 @@ for ib, pf, pfv in zip(bandIndices, bandColumns, bandVarColumns):
     data[:, pfv] = fluxesVar[:, ib]
 data[:, redshiftColumn] = redshifts
 data[:, -1] = types
+
 np.savetxt(params['trainingFile'], data)
 hdf5file_fn =  os.path.basename(params['trainingFile']).split(".")[0]+".h5"
 output_path = os.path.dirname(params['trainingFile'])

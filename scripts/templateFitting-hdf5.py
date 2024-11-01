@@ -41,11 +41,8 @@ f_mod = np.zeros((redshiftGrid.size, len(sed_names),
 for t, sed_name in enumerate(sed_names):
     f_mod[:, t, :] = np.loadtxt(dir_seds + '/' + sed_name +
                                 '_fluxredshiftmod.txt')
-
-numObjectsTarget_old = np.sum(1 for line in open(params['target_catFile']))
+    
 numObjectsTarget =  getNumberLinesFromFileh5(params,prefix="target_",ftype="catalog")
-
-assert numObjectsTarget == numObjectsTarget_old
 
 firstLine = int(threadNum * numObjectsTarget / float(numThreads))
 lastLine = int(min(numObjectsTarget,
