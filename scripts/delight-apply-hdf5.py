@@ -42,8 +42,19 @@ for t, sed_name in enumerate(sed_names):
 numZbins = redshiftDistGrid.size - 1
 numZ = redshiftGrid.size
 
-numObjectsTraining = np.sum(1 for line in open(params['training_catFile']))
-numObjectsTarget = np.sum(1 for line in open(params['target_catFile']))
+#numObjectsTraining = np.sum(1 for line in open(params['training_catFile']))
+#numObjectsTarget = np.sum(1 for line in open(params['target_catFile']))
+
+numObjectsTraining_old = np.sum(1 for line in open(params['training_catFile']))
+numObjectsTraining =  getNumberLinesFromFileh5(params,prefix="training_",ftype="catalog")
+
+numObjectsTarget_old = np.sum(1 for line in open(params['target_catFile']))
+numObjectsTarget =  getNumberLinesFromFileh5(params,prefix="target_",ftype="catalog")
+
+
+assert numObjectsTraining == numObjectsTraining_old
+assert numObjectsTarget == numObjectsTarget_old
+
 redshiftsInTarget = ('redshift' in params['target_bandOrder'])
 Ncompress = params['Ncompress']
 

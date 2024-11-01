@@ -169,7 +169,9 @@ def delightLearnh5(configfilename):
 
     f_mod = readSEDs(params)
 
-    numObjectsTraining = np.sum(1 for line in open(params['training_catFile']))
+    #numObjectsTraining = np.sum(1 for line in open(params['training_catFile']))
+    numObjectsTraining =  getNumberLinesFromFileh5(params,prefix="training_",ftype="catalog")
+
 
     msg= 'Number of Training Objects ' + str(numObjectsTraining)
     logger.info(msg)

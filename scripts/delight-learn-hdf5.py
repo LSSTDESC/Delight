@@ -27,7 +27,11 @@ numBands = bandCoefAmplitudes.shape[0]
 redshiftDistGrid, redshiftGrid, redshiftGridGP = createGrids(params)
 f_mod = readSEDs(params)
 
-numObjectsTraining = np.sum(1 for line in open(params['training_catFile']))
+numObjectsTraining_old = np.sum(1 for line in open(params['training_catFile']))
+numObjectsTraining =  getNumberLinesFromFileh5(params,prefix="training_",ftype="catalog")
+
+assert numObjectsTraining == numObjectsTraining_old
+
 print('Number of Training Objects', numObjectsTraining)
 firstLine = int(threadNum * numObjectsTraining / numThreads)
 lastLine = int(min(numObjectsTraining,

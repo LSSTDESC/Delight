@@ -60,6 +60,8 @@ def delightApply(configfilename):
 
     numObjectsTraining = np.sum(1 for line in open(params['training_catFile']))
     numObjectsTarget = np.sum(1 for line in open(params['target_catFile']))
+
+
     redshiftsInTarget = ('redshift' in params['target_bandOrder'])
     Ncompress = params['Ncompress']
 
@@ -287,8 +289,12 @@ def delightApplyh5(configfilename):
     numZbins = redshiftDistGrid.size - 1
     numZ = redshiftGrid.size
 
-    numObjectsTraining = np.sum(1 for line in open(params['training_catFile']))
-    numObjectsTarget = np.sum(1 for line in open(params['target_catFile']))
+    #numObjectsTraining = np.sum(1 for line in open(params['training_catFile']))
+    #numObjectsTarget = np.sum(1 for line in open(params['target_catFile']))
+
+    numObjectsTraining =  getNumberLinesFromFileh5(params,prefix="training_",ftype="catalog")
+    numObjectsTarget =  getNumberLinesFromFileh5(params,prefix="target_",ftype="catalog")
+
     redshiftsInTarget = ('redshift' in params['target_bandOrder'])
     Ncompress = params['Ncompress']
 

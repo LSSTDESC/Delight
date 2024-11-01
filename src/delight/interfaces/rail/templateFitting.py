@@ -243,7 +243,10 @@ def templateFittingh5(configfilename):
     for t, sed_name in enumerate(sed_names):
         f_mod[:, t, :] = np.loadtxt(dir_seds + '/' + sed_name + '_fluxredshiftmod.txt')
 
-    numObjectsTarget = np.sum(1 for line in open(params['target_catFile']))
+    #numObjectsTarget = np.sum(1 for line in open(params['target_catFile']))
+    numObjectsTarget =  getNumberLinesFromFileh5(params,prefix="target_",ftype="catalog")
+
+
 
     firstLine = int(threadNum * numObjectsTarget / float(numThreads))
     lastLine = int(min(numObjectsTarget,(threadNum + 1) * numObjectsTarget / float(numThreads)))

@@ -397,6 +397,23 @@ def getDataFromFile(params, firstLine, lastLine,
                             None, None, None,\
                             X, Y, Yvar
 
+def getNumberLinesFromFileh5(params,prefix="",ftype="catalog"):
+    """
+    Return the number of lines 
+    """
+    if ftype == "gpparams":
+        hdf5file_fn =  os.path.basename(params[prefix+'paramFile']).split(".")[0]+".h5"
+        input_path = os.path.dirname(params[prefix+'paramFile'])
+    elif ftype == "catalog":
+        hdf5file_fn =  os.path.basename(params[prefix+'catFile']).split(".")[0]+".h5"
+        input_path = os.path.dirname(params[prefix+'catFile'])
+       
+    hdf5file_fullfn = os.path.join(input_path,hdf5file_fn)
+    with h5py.File(hdf5file_fullfn, 'r') as hdf5_file:
+            f_array = hdf5_file[prefix][:]
+
+    return f_array.shape[0]
+
 
 def getDataFromFileh5(params, firstLine, lastLine,
                     prefix="", ftype="catalog", getXY=True, CV=False):
@@ -454,8 +471,6 @@ def getDataFromFileh5(params, firstLine, lastLine,
         hdf5file_fn =  os.path.basename(params[prefix+'catFile']).split(".")[0]+".h5"
         input_path = os.path.dirname(params[prefix+'catFile'])
         hdf5file_fullfn = os.path.join(input_path,hdf5file_fn)
-
-    
         with h5py.File(hdf5file_fullfn, 'r') as hdf5_file:
             f_array = hdf5_file[prefix][:]
         #with open(params[prefix+'catFile']) as f:
