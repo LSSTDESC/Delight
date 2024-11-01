@@ -42,7 +42,7 @@ def getDelightRedshiftEstimation(configfilename,chunknum,nsize,index_sel):
     # where m is the number of redshifts calculated by delight
     # nz is the number of redshifts
     pdfs = np.loadtxt(params['redshiftpdfFile'])
-    pdfs /= np.trapezoidz(pdfs, x=redshiftGrid, axis=1)[:, None]
+    pdfs /= np.trapz(pdfs, x=redshiftGrid, axis=1)[:, None]
     nzbins = len(redshiftGrid)
     full_pdfs = np.zeros([nsize, nzbins])
     full_pdfs[index_sel] = pdfs
@@ -103,7 +103,7 @@ def getDelightRedshiftEstimationh5(configfilename,chunknum,nsize,index_sel):
     # nz is the number of redshifts
     #pdfs = np.loadtxt(params['redshiftpdfFile'])
     pdfs = getdatah5(params['redshiftpdfFile'],prefix="gp_pdfs_")
-    pdfs /= np.trapezoid(pdfs, x=redshiftGrid, axis=1)[:, None]
+    pdfs /= np.trapz(pdfs, x=redshiftGrid, axis=1)[:, None]
     nzbins = len(redshiftGrid)
     full_pdfs = np.zeros([nsize, nzbins])
     full_pdfs[index_sel] = pdfs
