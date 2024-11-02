@@ -87,7 +87,7 @@ def getDelightRedshiftEstimationh5(configfilename,chunknum,nsize,index_sel):
     :return:
     """
 
-    msg = "--- getDelightRedshiftEstimation({}) for chunk {}---".format(nsize,chunknum)
+    msg = "--- getDelightRedshiftEstimationh5({}) for chunk {}---".format(nsize,chunknum)
     logger.info(msg)
 
     # initialize arrays to be returned

@@ -23,10 +23,8 @@ def delightApply(configfilename):
     :return:
     """
 
-
     threadNum = 0
     numThreads = 1
-
 
 
     params = parseParamFile(configfilename, verbose=False, catFilesNeeded=True)
@@ -475,8 +473,9 @@ def delightApplyh5(configfilename):
         hdf5file_fn =  os.path.basename(fname).split(".")[0]+".h5"
         output_path = os.path.dirname(fname)
         hdf5file_fullfn = os.path.join(output_path , hdf5file_fn)
-        with h5py.File(hdf5file_fullfn, 'w') as hdf5_file:
-            hdf5_file.create_dataset('gp_pdfs_', data=globalPDFs)
+        writedataarrayh5(hdf5file_fullfn,'gp_pdfs_',globalPDFs)
+        #with h5py.File(hdf5file_fullfn, 'w') as hdf5_file:
+        #    hdf5_file.create_dataset('gp_pdfs_', data=globalPDFs)
 
         if redshiftsInTarget:
             np.savetxt(params['metricsFile'], globalMetrics, fmt=fmt)
@@ -484,23 +483,26 @@ def delightApplyh5(configfilename):
             hdf5file_fn =  os.path.basename(params['metricsFile']).split(".")[0]+".h5"
             output_path = os.path.dirname(params['metricsFile'])
             hdf5file_fullfn = os.path.join(output_path , hdf5file_fn)
-            with h5py.File(hdf5file_fullfn, 'w') as hdf5_file:
-                hdf5_file.create_dataset('gp_metrics_', data=globalMetrics)
+            writedataarrayh5(hdf5file_fullfn,'gp_metrics_',globalMetrics)
+            #with h5py.File(hdf5file_fullfn, 'w') as hdf5_file:
+            #    hdf5_file.create_dataset('gp_metrics_', data=globalMetrics)
 
         if params['useCompression'] and not params['compressionFilesFound']:
             np.savetxt(params['compressMargLikFile'],globalCompEvidences, fmt=fmt)
             hdf5file_fn =  os.path.basename(params['compressMargLikFile']).split(".")[0]+".h5"
             output_path = os.path.dirname(params['compressMargLikFile'])
             hdf5file_fullfn = os.path.join(output_path , hdf5file_fn)
-            with h5py.File(hdf5file_fullfn, 'w') as hdf5_file:
-                hdf5_file.create_dataset('gp_evidences_', data=globalCompEvidences)
+            writedataarrayh5(hdf5file_fullfn,'gp_evidences_',globalCompEvidences)
+            #with h5py.File(hdf5file_fullfn, 'w') as hdf5_file:
+            #    hdf5_file.create_dataset('gp_evidences_', data=globalCompEvidences)
 
             np.savetxt(params['compressIndicesFile'],globalCompressIndices, fmt="%i")
             hdf5file_fn =  os.path.basename(params['compressIndicesFile']).split(".")[0]+".h5"
             output_path = os.path.dirname(params['compressIndicesFile'])
             hdf5file_fullfn = os.path.join(output_path , hdf5file_fn)
-            with h5py.File(hdf5file_fullfn, 'w') as hdf5_file:
-                hdf5_file.create_dataset('gp_indices_', data=globalCompressIndices)
+            writedataarrayh5(hdf5file_fullfn,'gp_indices_',globalCompressIndices)
+            #with h5py.File(hdf5file_fullfn, 'w') as hdf5_file:
+            #    hdf5_file.create_dataset('gp_indices_', data=globalCompressIndices)
 #-----------------------------------------------------------------------------------------
 if __name__ == "__main__":  # pragma: no cover
     # execute only if run as a script

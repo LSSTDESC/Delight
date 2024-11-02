@@ -90,6 +90,9 @@ for chunk in range(numChunks):
     bestTypes = np.zeros((numTObjCk, ), dtype=int)
     ells = np.zeros((numTObjCk, ), dtype=int)
     loc = TR_firstLine - 1
+
+    # loop on training data and training GP coefficients produced by delight_learn
+    # It fills the model_mean and model_covar predicted by GP
     trainingDataIter = getDataFromFileh5(params, TR_firstLine, TR_lastLine,
                                        prefix="training_", ftype="gpparams")
     for loc, (z, ell, bands, X, B, flatarray) in enumerate(trainingDataIter):
@@ -233,11 +236,9 @@ if threadNum == 0:
     hdf5file_fn =  os.path.basename(fname).split(".")[0]+".h5"
     output_path = os.path.dirname(fname)
     hdf5file_fullfn = os.path.join(output_path , hdf5file_fn)
-    with h5py.File(hdf5file_fullfn, 'w') as hdf5_file:
-        hdf5_file.create_dataset('gp_pdfs_', data=globalPDFs)
-
-
-
+    #with h5py.File(hdf5file_fullfn, 'w') as hdf5_file:
+    #    hdf5_file.create_dataset('gp_pdfs_', data=globalPDFs)
+    writedataarrayh5(hdf5file_fullfn,'gp_pdfs_',globalPDFs)
 
     if redshiftsInTarget:
         np.savetxt(params['metricsFile'], globalMetrics, fmt=fmt)
@@ -245,9 +246,9 @@ if threadNum == 0:
         hdf5file_fn =  os.path.basename(params['metricsFile']).split(".")[0]+".h5"
         output_path = os.path.dirname(params['metricsFile'])
         hdf5file_fullfn = os.path.join(output_path , hdf5file_fn)
-        with h5py.File(hdf5file_fullfn, 'w') as hdf5_file:
-            hdf5_file.create_dataset('gp_metrics_', data=globalMetrics)
-
+        #with h5py.File(hdf5file_fullfn, 'w') as hdf5_file:
+        #    hdf5_file.create_dataset('gp_metrics_', data=globalMetrics)
+        writedataarrayh5(hdf5file_fullfn,'gp_metrics_',globalMetrics)
 
 
     if params['useCompression'] and not params['compressionFilesFound']:
@@ -257,9 +258,9 @@ if threadNum == 0:
         hdf5file_fn =  os.path.basename(params['compressMargLikFile']).split(".")[0]+".h5"
         output_path = os.path.dirname(params['compressMargLikFile'])
         hdf5file_fullfn = os.path.join(output_path , hdf5file_fn)
-        with h5py.File(hdf5file_fullfn, 'w') as hdf5_file:
-            hdf5_file.create_dataset('gp_evidences_', data=globalCompEvidences)
-
+        #with h5py.File(hdf5file_fullfn, 'w') as hdf5_file:
+        #    hdf5_file.create_dataset('gp_evidences_', data=globalCompEvidences)
+        writedataarrayh5(hdf5file_fullfn,'gp_evidences_',globalCompEvidences)
 
         np.savetxt(params['compressIndicesFile'],
                    globalCompressIndices, fmt="%i")
@@ -267,5 +268,6 @@ if threadNum == 0:
         hdf5file_fn =  os.path.basename(params['compressIndicesFile']).split(".")[0]+".h5"
         output_path = os.path.dirname(params['compressIndicesFile'])
         hdf5file_fullfn = os.path.join(output_path , hdf5file_fn)
-        with h5py.File(hdf5file_fullfn, 'w') as hdf5_file:
-            hdf5_file.create_dataset('gp_indices_', data=globalCompressIndices)
+        #with h5py.File(hdf5file_fullfn, 'w') as hdf5_file:
+        #    hdf5_file.create_dataset('gp_indices_', data=globalCompressIndices)
+        writedataarrayh5(hdf5file_fullfn,'gp_indices_',globalCompressIndices)

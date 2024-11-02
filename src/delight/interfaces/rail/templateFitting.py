@@ -350,18 +350,18 @@ def templateFittingh5(configfilename):
         hdf5file_fn =  os.path.basename(params['redshiftpdfFileTemp']).split(".")[0]+".h5"
         output_path = os.path.dirname(params['redshiftpdfFileTemp'])
         hdf5file_fullfn = os.path.join(output_path , hdf5file_fn)
-        with h5py.File(hdf5file_fullfn, 'w') as hdf5_file:
-            hdf5_file.create_dataset('temp_pdfs_', data=globalPDFs)
-            
+        #with h5py.File(hdf5file_fullfn, 'w') as hdf5_file:
+        #    hdf5_file.create_dataset('temp_pdfs_', data=globalPDFs)
+        writedataarrayh5(hdf5file_fullfn,'temp_pdfs_',globalPDFs)    
         if redshiftColumn >= 0:
             np.savetxt(params['metricsFileTemp'], globalMetrics, fmt=fmt)
 
             hdf5file_fn =  os.path.basename(params['metricsFileTemp']).split(".")[0]+".h5"
             output_path = os.path.dirname(params['metricsFileTemp'])
             hdf5file_fullfn = os.path.join(output_path , hdf5file_fn)
-            with h5py.File(hdf5file_fullfn, 'w') as hdf5_file:
-                hdf5_file.create_dataset('temp_metrics_', data=globalMetrics)
-
+            #with h5py.File(hdf5file_fullfn, 'w') as hdf5_file:
+            #    hdf5_file.create_dataset('temp_metrics_', data=globalMetrics)
+            writedataarrayh5(hdf5file_fullfn,'temp_metrics_',globalMetrics) 
 
 
 

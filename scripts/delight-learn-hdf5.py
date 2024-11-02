@@ -51,6 +51,8 @@ fmt = '%i ' + '%.12e ' * (localData.shape[1] - 1)
 
 loc = - 1
 crossValidate = params['training_crossValidate']
+
+# read training file
 trainingDataIter1 = getDataFromFileh5(params, firstLine, lastLine,
                                     prefix="training_", getXY=True,
                                     CV=crossValidate)
@@ -133,8 +135,10 @@ if threadNum == 0:
     hdf5file_fn =  os.path.basename(params['training_paramFile']).split(".")[0]+".h5"
     output_path = os.path.dirname(params['training_paramFile'])
     hdf5file_fullfn = os.path.join(output_path , hdf5file_fn)
-    with h5py.File(hdf5file_fullfn, 'w') as hdf5_file:
-        hdf5_file.create_dataset('training_', data=reducedData)
+    #with h5py.File(hdf5file_fullfn, 'w') as hdf5_file:
+    #    hdf5_file.create_dataset('traingpparams_', data=reducedData)
+    #writedataarrayh5(hdf5file_fullfn,'traingpparams_',reducedData)
+    writedataarrayh5(hdf5file_fullfn,'training_',reducedData)
         
     np.savetxt(params['training_paramFile'], reducedData, fmt=fmt)
     
@@ -142,9 +146,10 @@ if threadNum == 0:
         hdf5file_fn =  os.path.basename(params['training_CVfile']).split(".")[0]+".h5"
         output_path = os.path.dirname(params['training_CVfile'])
         hdf5file_fullfn = os.path.join(output_path,hdf5file_fn)
-        with h5py.File(hdf5file_fullfn, 'w') as hdf5_file:
-            hdf5_file.create_dataset('training_', data=chi2sGlobal)
-        
+        #with h5py.File(hdf5file_fullfn, 'w') as hdf5_file:
+        #    hdf5_file.create_dataset('traingpcv_', data=chi2sGlobal)
+        #writedataarrayh5(hdf5file_fullfn,'traingpcv_',chi2sGlobal)
+        writedataarrayh5(hdf5file_fullfn,'training_',chi2sGlobal)
         np.savetxt(params['training_CVfile'], chi2sGlobal)
 
 

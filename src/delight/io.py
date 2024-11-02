@@ -409,10 +409,9 @@ def getNumberLinesFromFileh5(params,prefix="",ftype="catalog"):
         input_path = os.path.dirname(params[prefix+'catFile'])
        
     hdf5file_fullfn = os.path.join(input_path,hdf5file_fn)
-    with h5py.File(hdf5file_fullfn, 'r') as hdf5_file:
-            f_array = hdf5_file[prefix][:]
-
+    f_array = readdataarrayh5(hdf5file_fullfn,prefix)
     return f_array.shape[0]
+
 
 
 def getDataFromFileh5(params, firstLine, lastLine,
@@ -426,32 +425,34 @@ def getDataFromFileh5(params, firstLine, lastLine,
     if ftype == "gpparams":
 
         # find the hdf5 file
+        #hdf5file_fn =  os.path.basename(params[prefix+'paramFile']).split(".")[0]+".h5"
+        #input_path = os.path.dirname(params[prefix+'paramFile'])
+        # call this function for reading the file
         hdf5file_fn =  os.path.basename(params[prefix+'paramFile']).split(".")[0]+".h5"
         input_path = os.path.dirname(params[prefix+'paramFile'])
         hdf5file_fullfn = os.path.join(input_path,hdf5file_fn)
-        with h5py.File(hdf5file_fullfn, 'r') as hdf5_file:
-            f_array = hdf5_file[prefix][:]
-
+        f_array = readdataarrayh5(hdf5file_fullfn,prefix)
+        
         #with open(params[prefix+'paramFile']) as f:
-        #    for line in itertools.islice(f, firstLine, lastLine):
-            for irow in range(firstLine, lastLine):
+        #   for line in itertools.islice(f, firstLine, lastLine):
+        for irow in range(firstLine, lastLine):
 
-                #data = np.array(line.split(' '), dtype=float)
-                data = f_array[irow,:] 
+            #data = np.array(line.split(' '), dtype=float)
+            data = f_array[irow,:] 
             
-                #data = np.fromstring(line, dtype=float, sep=' ')
-                B = int(data[0])
-                z = data[1]
-                ell = data[2]
-                bands = data[3:3+B]
-                flatarray = data[3+B:]
-                X = np.zeros((B, 3))
-                for off, iband in enumerate(bands):
-                    X[off, 0] = iband
-                    X[off, 1] = z
-                    X[off, 2] = ell
+            #data = np.fromstring(line, dtype=float, sep=' ')
+            B = int(data[0])
+            z = data[1]
+            ell = data[2]
+            bands = data[3:3+B]
+            flatarray = data[3+B:]
+            X = np.zeros((B, 3))
+            for off, iband in enumerate(bands):
+                X[off, 0] = iband
+                X[off, 1] = z
+                X[off, 2] = ell
 
-                yield z, ell, bands, X, B, flatarray
+            yield z, ell, bands, X, B, flatarray
 
     if ftype == "catalog":
 
@@ -467,88 +468,135 @@ def getDataFromFileh5(params, firstLine, lastLine,
             bandIndicesCV, bandNamesCV, bandColumnsCV,\
                 bandVarColumnsCV, redshiftColumnCV =\
                 readColumnPositions(params, prefix=prefix+'CV_', refFlux=False)
-
+        # be very carefull to have the good param file
         hdf5file_fn =  os.path.basename(params[prefix+'catFile']).split(".")[0]+".h5"
         input_path = os.path.dirname(params[prefix+'catFile'])
         hdf5file_fullfn = os.path.join(input_path,hdf5file_fn)
-        with h5py.File(hdf5file_fullfn, 'r') as hdf5_file:
-            f_array = hdf5_file[prefix][:]
+        f_array = readdataarrayh5(hdf5file_fullfn,prefix)
+        
         #with open(params[prefix+'catFile']) as f:
             #for line in itertools.islice(f, firstLine, lastLine):
-            for irow in range(firstLine, lastLine):
+        for irow in range(firstLine, lastLine):
 
-                #data = np.array(line.split(' '), dtype=float)
-                data = f_array[irow,:] 
-                refFlux = data[refBandColumn]
-                normedRefFlux = refFlux * refBandNorm
-                if redshiftColumn >= 0:
-                    z = data[redshiftColumn]
-                else:
-                    z = -1
+            #data = np.array(line.split(' '), dtype=float)
+            data = f_array[irow,:] 
+            refFlux = data[refBandColumn]
+            normedRefFlux = refFlux * refBandNorm
+            if redshiftColumn >= 0:
+                z = data[redshiftColumn]
+            else:
+                z = -1
 
-                # drop bad values and find how many bands are valid
-                mask = np.isfinite(data[bandColumns])
-                mask &= np.isfinite(data[bandVarColumns])
-                mask &= data[bandColumns] > 0.0
-                mask &= data[bandVarColumns] > 0.0
-                bandsUsed = np.where(mask)[0]
-                numBandsUsed = mask.sum()
+            # drop bad values and find how many bands are valid
+            mask = np.isfinite(data[bandColumns])
+            mask &= np.isfinite(data[bandVarColumns])
+            mask &= data[bandColumns] > 0.0
+            mask &= data[bandVarColumns] > 0.0
+            bandsUsed = np.where(mask)[0]
+            numBandsUsed = mask.sum()
 
-                if z > -1:
-                    ell = normedRefFlux * 4 * np.pi \
+            if z > -1:
+                ell = normedRefFlux * 4 * np.pi \
                         * params['fluxLuminosityNorm'] * DL(z)**2 * (1+z)
 
-                if (refFlux <= 0) or (not np.isfinite(refFlux))\
+            if (refFlux <= 0) or (not np.isfinite(refFlux))\
                         or (z < 0) or (numBandsUsed <= 1):
-                    print("Skipping galaxy: refflux=", refFlux,
+                print("Skipping galaxy: refflux=", refFlux,
                           "z=", z, "numBandsUsed=", numBandsUsed)
-                    continue  # not valid data - skip to next valid object
+                continue  # not valid data - skip to next valid object
 
-                fluxes = data[bandColumns[mask]]
-                fluxesVar = data[bandVarColumns[mask]] +\
+            fluxes = data[bandColumns[mask]]
+            fluxesVar = data[bandVarColumns[mask]] +\
                     (params['training_extraFracFluxError'] * fluxes)**2
 
+            if CV:
+                maskCV = np.isfinite(data[bandColumnsCV])
+                maskCV &= np.isfinite(data[bandVarColumnsCV])
+                maskCV &= data[bandColumnsCV] > 0.0
+                maskCV &= data[bandVarColumnsCV] > 0.0
+                bandsUsedCV = np.where(maskCV)[0]
+                numBandsUsedCV = maskCV.sum()
+                fluxesCV = data[bandColumnsCV[maskCV]]
+                fluxesCVVar = data[bandVarColumnsCV[maskCV]] +\
+                    (params['training_extraFracFluxError'] * fluxesCV)**2
+
+            if not getXY:
+
                 if CV:
-                    maskCV = np.isfinite(data[bandColumnsCV])
-                    maskCV &= np.isfinite(data[bandVarColumnsCV])
-                    maskCV &= data[bandColumnsCV] > 0.0
-                    maskCV &= data[bandVarColumnsCV] > 0.0
-                    bandsUsedCV = np.where(maskCV)[0]
-                    numBandsUsedCV = maskCV.sum()
-                    fluxesCV = data[bandColumnsCV[maskCV]]
-                    fluxesCVVar = data[bandVarColumnsCV[maskCV]] +\
-                        (params['training_extraFracFluxError'] * fluxesCV)**2
-
-                if not getXY:
-
-                    if CV:
-                        yield z, normedRefFlux,\
+                    yield z, normedRefFlux,\
                             bandIndices[mask], fluxes, fluxesVar,\
                             bandIndicesCV[maskCV], fluxesCV, fluxesCVVar
-                    else:
-                        yield z, normedRefFlux,\
+                else:
+                    yield z, normedRefFlux,\
                             bandIndices[mask], fluxes, fluxesVar,\
                             None, None, None
 
-                if getXY:
+            if getXY:
 
-                    Y = np.zeros((numBandsUsed, 1))
-                    Yvar = np.zeros((numBandsUsed, 1))
-                    X = np.ones((numBandsUsed, 3))
-                    for off, iband in enumerate(bandIndices[mask]):
-                        X[off, 0] = iband
-                        X[off, 1] = z
-                        X[off, 2] = ell
-                        Y[off, 0] = fluxes[off]
-                        Yvar[off, 0] = fluxesVar[off]
+                Y = np.zeros((numBandsUsed, 1))
+                Yvar = np.zeros((numBandsUsed, 1))
+                X = np.ones((numBandsUsed, 3))
+                for off, iband in enumerate(bandIndices[mask]):
+                    X[off, 0] = iband
+                    X[off, 1] = z
+                    X[off, 2] = ell
+                    Y[off, 0] = fluxes[off]
+                    Yvar[off, 0] = fluxesVar[off]
 
-                    if CV:
-                        yield z, normedRefFlux,\
+                if CV:
+                    yield z, normedRefFlux,\
                             bandIndices[mask], fluxes, fluxesVar,\
                             bandIndicesCV[maskCV], fluxesCV, fluxesCVVar,\
                             X, Y, Yvar
-                    else:
-                        yield z, normedRefFlux,\
+                else:
+                    yield z, normedRefFlux,\
                             bandIndices[mask], fluxes, fluxesVar,\
                             None, None, None,\
                             X, Y, Yvar
+
+def writedataarrayh5(filename,prefix,data):
+    """
+    Write the data rray in an hdf5 file 
+    parameters:
+      filename : full filename of the datafile to read
+      prefix : the hdf5 key by which the array is indexed
+             prefix = training_      : get the training data (fluxes in bands and redshifts)
+             prefix = target_        : get the target data (flux in bands and redshifts)
+             prefix = training_ : get the gaussian process parameters produced in delight-learn
+             prefix = training_     : get the gaussian process chi2 produced in delight-learn
+             prefix = temp_pdfs_     : get the redshifts posteriors produced in templateFitting
+             prefix = temp_metrics_  : get the metrics for the template Fitting
+             prefix = gp_pdfs_       : get the gaussian process posteriors produced in delight-apply
+             prefix = gp_metrics_    : get the gaussian process metrics produced in delight-apply
+             prefix = gp_evidences_  : get the gaussian process evidence in delight-apply
+             prefix = gp_indices_    : get the gaussian process indices in delight-apply
+
+    Notice the prefix is related to the prefix definition in params
+    """
+    with h5py.File(filename, 'w') as hdf5_file:
+        hdf5_file.create_dataset(prefix, data=data)
+
+
+def readdataarrayh5(filename,prefix):
+    """
+    Retrieve the full hdf5 data file as an array
+    parameters:
+      filename : full filename of the datafile to read
+      prefix : the hdf5 key by which the array is indexed
+             prefix = training_      : get the training data (fluxes in bands and redshifts)
+             prefix = target_        : get the target data (flux in bands and redshifts)
+             prefix = training_      : get the gaussian process parameters produced in delight-learn
+             prefix = training_      : get the gaussian process chi2 produced in delight-learn
+             prefix = temp_pdfs_     : get the redshifts posteriors produced in templateFitting
+             prefix = temp_metrics_  : get the metrics for the template Fitting
+             prefix = gp_pdfs_       : get the gaussian process posteriors produced in delight-apply
+             prefix = gp_metrics_    : get the gaussian process metrics produced in delight-apply
+             prefix = gp_evidences_  : get the gaussian process evidence in delight-apply
+             prefix = gp_indices_    : get the gaussian process indices in delight-apply
+             
+    Notice the prefix is related to the prefix definition in params
+    """
+    
+    with h5py.File(filename, 'r') as hdf5_file:
+        data = hdf5_file[prefix][:]
+    return data

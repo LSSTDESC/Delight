@@ -306,8 +306,9 @@ def convertDESCcatChunk(configfilename,data,chunknum,flag_filter_validation = Tr
         hdf5file_fn =  os.path.basename(params['targetFile']).split(".")[0]+".h5"
         output_path = os.path.dirname(params['targetFile'])
         hdf5file_fullfn = os.path.join(output_path,hdf5file_fn)
-        with h5py.File(hdf5file_fullfn, 'w') as hdf5_file:
-            hdf5_file.create_dataset('target_', data=data)
+        #with h5py.File(hdf5file_fullfn, 'w') as hdf5_file:
+        #    hdf5_file.create_dataset('target_', data=data)
+        writedataarrayh5(hdf5file_fullfn,'target_',data)
 
         
 
@@ -801,8 +802,9 @@ def convertDESCcatTrainData(configfilename,descatalogdata,flag_filter=True,snr_c
     hdf5file_fn =  os.path.basename(params['trainingFile']).split(".")[0]+".h5"
     output_path = os.path.dirname(params['trainingFile'])
     hdf5file_fullfn = os.path.join(output_path,hdf5file_fn)
-    with h5py.File(hdf5file_fullfn, 'w') as hdf5_file:
-        hdf5_file.create_dataset('training_', data=data)
+    #with h5py.File(hdf5file_fullfn, 'w') as hdf5_file:
+    #    hdf5_file.create_dataset('training_', data=data)
+    writedataarrayh5(hdf5file_fullfn,'training_',data)
 
 #---
 
@@ -993,8 +995,9 @@ def convertDESCcatTargetFile(configfilename,desctargetcatalogfile,flag_filter=Tr
     hdf5file_fn =  os.path.basename(params['targetFile']).split(".")[0]+".h5"
     output_path = os.path.dirname(params['targetFile'])
     hdf5file_fullfn = os.path.join(output_path,hdf5file_fn)
-    with h5py.File(hdf5file_fullfn, 'w') as hdf5_file:
-        hdf5_file.create_dataset('target_', data=data)
+    #with h5py.File(hdf5file_fullfn, 'w') as hdf5_file:
+    #    hdf5_file.create_dataset('target_', data=data)
+    writedataarrayh5(hdf5file_fullfn,'target_',data)
 
     
 

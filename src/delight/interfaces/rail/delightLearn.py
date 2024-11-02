@@ -270,18 +270,18 @@ def delightLearnh5(configfilename):
         hdf5file_fn =  os.path.basename(params['training_paramFile']).split(".")[0]+".h5"
         output_path = os.path.dirname(params['training_paramFile'])
         hdf5file_fullfn = os.path.join(output_path , hdf5file_fn)
-        with h5py.File(hdf5file_fullfn, 'w') as hdf5_file:
-            hdf5_file.create_dataset('training_', data=reducedData)
-
+        #with h5py.File(hdf5file_fullfn, 'w') as hdf5_file:
+        #    hdf5_file.create_dataset('traingpparams_', data=reducedData)
+        writedataarrayh5(hdf5file_fullfn,'training_',reducedData)
         if crossValidate:
             np.savetxt(params['training_CVfile'], chi2sGlobal)
              
             hdf5file_fn =  os.path.basename(params['training_CVfile']).split(".")[0]+".h5"
             output_path = os.path.dirname(params['training_CVfile'])
             hdf5file_fullfn = os.path.join(output_path,hdf5file_fn)
-            with h5py.File(hdf5file_fullfn, 'w') as hdf5_file:
-                hdf5_file.create_dataset('training_', data=chi2sGlobal)
-
+            #with h5py.File(hdf5file_fullfn, 'w') as hdf5_file:
+            #    hdf5_file.create_dataset('training_', data=chi2sGlobal)
+            writedataarrayh5(hdf5file_fullfn,'training_',chi2sGlobal)
 
 #-----------------------------------------------------------------------------------------
 if __name__ == "__main__":  # pragma: no cover
