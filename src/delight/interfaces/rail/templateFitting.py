@@ -310,7 +310,7 @@ def templateFittingh5(configfilename):
             np.set_printoptions(threshold=20, edgeitems=10, linewidth=140,formatter=dict(float=lambda x: "%.3e" % x))  # float arrays %.3g
             print(p_z)
 
-        # Compute likelihood x prior
+        # Compute likelihood x prior (for computing evidence)
         like_grid *= p_z
 
         localPDFs[loc, :] += like_grid.sum(axis=1)
@@ -352,7 +352,9 @@ def templateFittingh5(configfilename):
         hdf5file_fullfn = os.path.join(output_path , hdf5file_fn)
         #with h5py.File(hdf5file_fullfn, 'w') as hdf5_file:
         #    hdf5_file.create_dataset('temp_pdfs_', data=globalPDFs)
-        writedataarrayh5(hdf5file_fullfn,'temp_pdfs_',globalPDFs)    
+        writedataarrayh5(hdf5file_fullfn,'temp_pdfs_',globalPDFs)
+
+
         if redshiftColumn >= 0:
             np.savetxt(params['metricsFileTemp'], globalMetrics, fmt=fmt)
 
