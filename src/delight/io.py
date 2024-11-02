@@ -397,6 +397,28 @@ def getDataFromFile(params, firstLine, lastLine,
                             None, None, None,\
                             X, Y, Yvar
 
+
+def getFilePathh5(params,prefix="",ftype="catalog"):
+    """
+    Return the number of lines 
+    """
+    if ftype == "gpparams":
+        hdf5file_fn =  os.path.basename(params[prefix+'paramFile']).split(".")[0]+".h5"
+        input_path = os.path.dirname(params[prefix+'paramFile'])
+    elif ftype == "catalog":
+        hdf5file_fn =  os.path.basename(params[prefix+'catFile']).split(".")[0]+".h5"
+        input_path = os.path.dirname(params[prefix+'catFile'])
+    else:
+        # pdfs or metrucs
+        hdf5file_fn =  os.path.basename(params[prefix]).split(".")[0]+".h5"
+        input_path = os.path.dirname(params[prefix])
+       
+    hdf5file_fullfn = os.path.join(input_path,hdf5file_fn)
+   
+    return hdf5file_fullfn
+
+
+
 def getNumberLinesFromFileh5(params,prefix="",ftype="catalog"):
     """
     Return the number of lines 
@@ -521,7 +543,6 @@ def getDataFromFileh5(params, firstLine, lastLine,
                     (params['training_extraFracFluxError'] * fluxesCV)**2
 
             if not getXY:
-
                 if CV:
                     yield z, normedRefFlux,\
                             bandIndices[mask], fluxes, fluxesVar,\
@@ -532,7 +553,6 @@ def getDataFromFileh5(params, firstLine, lastLine,
                             None, None, None
 
             if getXY:
-
                 Y = np.zeros((numBandsUsed, 1))
                 Yvar = np.zeros((numBandsUsed, 1))
                 X = np.ones((numBandsUsed, 3))
@@ -593,7 +613,7 @@ def readdataarrayh5(filename,prefix):
              prefix = gp_metrics_    : get the gaussian process metrics produced in delight-apply
              prefix = gp_evidences_  : get the gaussian process evidence in delight-apply
              prefix = gp_indices_    : get the gaussian process indices in delight-apply
-             
+
     Notice the prefix is related to the prefix definition in params
     """
     
