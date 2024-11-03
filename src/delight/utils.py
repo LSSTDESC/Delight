@@ -212,7 +212,22 @@ def kldiv(p, q):
 
 def computeMetrics(ztrue, redshiftGrid, PDF, confIntervals):
     """
-    Compute various metrics on the PDF
+    Compute various metrics on the PDF:
+    Parameters:
+       ztrue : the true redshift
+       redshiftGrid : the grid of redshift
+       PDF : the redshift posterior array
+       confIntervals : list of confidence intervals 5%, 10%
+     Return a list of arrays
+       ztrue : the true redshift
+       zmean : the mean of the pdf posterior
+       zstdzmean : the dispersion arout the zmean
+       zmap : the redshift at the most probable value
+       zstdzmap : the dispersion arout the zmap
+       pdfAtZ : the pdf value at the true redshift
+       cumPdfAtZ : the cumulated pdf value at the true redshift
+       Confidence levels at the corresponding intervals
+
     """
     zmean = np.average(redshiftGrid, weights=PDF)
     zmap = redshiftGrid[np.argmax(PDF)]
