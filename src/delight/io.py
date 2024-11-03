@@ -11,6 +11,10 @@ import h5py
 from scipy.interpolate import interp1d
 
 
+# to debug filling missing bands notebiik
+FLAG_DEBUG_CV = False
+
+
 def parseParamFile(fileName, verbose=True, catFilesNeeded=False):
     """
     Parser for configuration inputtype parameter files,
@@ -199,15 +203,19 @@ def readColumnPositions(params, prefix="training_", refFlux=True):
     """
     bandIndices = np.array([ib for ib, b in enumerate(params['bandNames'])
                             if b in params[prefix+'bandOrder']])
+
     bandNames = np.array(params['bandNames'])[bandIndices]
+
     bandColumns = np.array([params[prefix+'bandOrder'].index(b)
                             for b in bandNames])
     bandVarColumns = np.array([params[prefix+'bandOrder'].index(b+'_var')
                                for b in bandNames])
+
     if 'redshift' in params[prefix+'bandOrder']:
         redshiftColumn = params[prefix+'bandOrder'].index('redshift')
     else:
         redshiftColumn = -1
+
     if refFlux:
         refBandColumn = params[prefix+'bandOrder']\
             .index(params[prefix+'referenceBand'])
@@ -315,15 +323,24 @@ def getDataFromFile(params, firstLine, lastLine,
                             .index(params[prefix+'referenceBand'])]
 
         if CV:
+            if FLAG_DEBUG_CV:
+                print(f"** getDataFromFile with CV set (prefix = {prefix}  ) ::")
             bandIndicesCV, bandNamesCV, bandColumnsCV,\
                 bandVarColumnsCV, redshiftColumnCV =\
                 readColumnPositions(params, prefix=prefix+'CV_', refFlux=False)
+            if FLAG_DEBUG_CV:    
+                print("\t bandIndicesCV, bandNamesCV, bandColumnsCV,\
+                bandVarColumnsCV, redshiftColumnCV ==> \n \t \t",bandIndicesCV, bandNamesCV, bandColumnsCV,\
+                bandVarColumnsCV, redshiftColumnCV)
 
         with open(params[prefix+'catFile']) as f:
             for line in itertools.islice(f, firstLine, lastLine):
 
                 data = np.array(line.split(' '), dtype=float)
                 refFlux = data[refBandColumn]
+
+                if FLAG_DEBUG_CV:
+                    print("\t refFlux = ", refFlux)
                 normedRefFlux = refFlux * refBandNorm
                 if redshiftColumn >= 0:
                     z = data[redshiftColumn]
@@ -337,6 +354,9 @@ def getDataFromFile(params, firstLine, lastLine,
                 mask &= data[bandVarColumns] > 0.0
                 bandsUsed = np.where(mask)[0]
                 numBandsUsed = mask.sum()
+
+                if FLAG_DEBUG_CV:
+                    print(f"\t - mask = {mask} , numBandsUsed = {numBandsUsed}")
 
                 if z > -1:
                     ell = normedRefFlux * 4 * np.pi \
@@ -353,12 +373,23 @@ def getDataFromFile(params, firstLine, lastLine,
                     (params['training_extraFracFluxError'] * fluxes)**2
 
                 if CV:
+                    if FLAG_DEBUG_CV:
+                        print("\t CV_2 :: data = ", data)
+                        print("\t CV_2 :: bandColumnsCV,bandVarColumnsCV = ", bandColumnsCV," ",bandVarColumnsCV )
+                        print("\t CV_2 :: data[bandColumnsCV] = ", data[bandColumnsCV], "np.isfinite(data[bandColumnsCV] = ",np.isfinite(data[bandColumnsCV]))
                     maskCV = np.isfinite(data[bandColumnsCV])
                     maskCV &= np.isfinite(data[bandVarColumnsCV])
                     maskCV &= data[bandColumnsCV] > 0.0
                     maskCV &= data[bandVarColumnsCV] > 0.0
+                    
                     bandsUsedCV = np.where(maskCV)[0]
                     numBandsUsedCV = maskCV.sum()
+
+                    if FLAG_DEBUG_CV:
+                        print("\t CV_2 :: maskCV = ", maskCV )
+                        print("\t CV_2 :: bandsUsedCV = ", bandsUsedCV)
+                        print("\t CV_2 :: numBandsUsedCV = ",numBandsUsedCV )
+
                     fluxesCV = data[bandColumnsCV[maskCV]]
                     fluxesCVVar = data[bandVarColumnsCV[maskCV]] +\
                         (params['training_extraFracFluxError'] * fluxesCV)**2
@@ -409,7 +440,7 @@ def getFilePathh5(params,prefix="",ftype="catalog"):
         hdf5file_fn =  os.path.basename(params[prefix+'catFile']).split(".")[0]+".h5"
         input_path = os.path.dirname(params[prefix+'catFile'])
     else:
-        # pdfs or metrucs
+        # pdfs or metrics
         hdf5file_fn =  os.path.basename(params[prefix]).split(".")[0]+".h5"
         input_path = os.path.dirname(params[prefix])
        
@@ -582,7 +613,7 @@ def writedataarrayh5(filename,prefix,data):
       prefix : the hdf5 key by which the array is indexed
              prefix = training_      : get the training data (fluxes in bands and redshifts)
              prefix = target_        : get the target data (flux in bands and redshifts)
-             prefix = training_ : get the gaussian process parameters produced in delight-learn
+             prefix = training_      : get the gaussian process parameters produced in delight-learn
              prefix = training_     : get the gaussian process chi2 produced in delight-learn
              prefix = temp_pdfs_     : get the redshifts posteriors produced in templateFitting
              prefix = temp_metrics_  : get the metrics for the template Fitting
