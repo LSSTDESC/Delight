@@ -24,10 +24,16 @@ logger = logging.getLogger(__name__)
 
 # option to convert DC2 flux level (in AB units) into internal Delight units
 # this option will be removed when optimisation of parameters will be implemented
-FLAG_CONVERTFLUX_TODELIGHTUNIT=True
+FLAG_CONVERTFLUX_TODELIGHTUNIT = True
+
+if FLAG_CONVERTFLUX_TODELIGHTUNIT:
+    flux_multiplicative_factor = 2.22e10
+else:
+    flux_multiplicative_factor = 1
 
 
-# the order by which one want the data
+
+# the order by which one order the dataframe
 list_of_cols = [
     "id",
     "redshift",
@@ -45,6 +51,11 @@ list_of_cols = [
     "mag_err_y_lsst",
 ]
 list_of_filters = ["u", "g", "r", "i", "z", "y"]
+list_of_Filters = [ b.upper() for b in  list_of_filters ]
+dict_of_filters = {0:"u", 1:"g", 2:"r", 3:"i", 4:"z", 5:"y"}
+dict_of_Filters = {0:"U", 1:"G", 2:"R", 3:"I", 4:"Z", 5:"Y"}
+
+Nf = len(list_of_filters)
 
 
 def h5filetodataframe(filename, group="photometry"):
@@ -164,108 +175,27 @@ def convert_to_ABflux(row):
     return pd.Series(data, index=column_names)
 
 
-def group_entries(f):
-    """
-    group entries in single numpy array
+def generatedelightdataarray(df,params,prefix):
+    """Generate the 2D array for sving it in file
 
-    """
-    galid = f['id'][()][:, np.newaxis]
-    redshift = f['redshift'][()][:, np.newaxis]
-    mag_err_g_lsst = f['mag_err_g_lsst'][()][:, np.newaxis]
-    mag_err_i_lsst = f['mag_err_i_lsst'][()][:, np.newaxis]
-    mag_err_r_lsst = f['mag_err_r_lsst'][()][:, np.newaxis]
-    mag_err_u_lsst = f['mag_err_u_lsst'][()][:, np.newaxis]
-    mag_err_y_lsst = f['mag_err_y_lsst'][()][:, np.newaxis]
-    mag_err_z_lsst = f['mag_err_z_lsst'][()][:, np.newaxis]
-    mag_g_lsst = f['mag_g_lsst'][()][:, np.newaxis]
-    mag_i_lsst = f['mag_i_lsst'][()][:, np.newaxis]
-    mag_r_lsst = f['mag_r_lsst'][()][:, np.newaxis]
-    mag_u_lsst = f['mag_u_lsst'][()][:, np.newaxis]
-    mag_y_lsst = f['mag_y_lsst'][()][:, np.newaxis]
-    mag_z_lsst = f['mag_z_lsst'][()][:, np.newaxis]
-
-    full_arr = np.hstack((galid, redshift, mag_u_lsst, mag_g_lsst, mag_r_lsst, mag_i_lsst, mag_z_lsst, mag_y_lsst, \
-                          mag_err_u_lsst, mag_err_g_lsst, mag_err_r_lsst, mag_err_i_lsst, mag_err_z_lsst,
-                          mag_err_y_lsst))
-    return full_arr
-
-
-def filter_mag_entries(d,nb=6):
-    """
-    Filter bad data with bad magnitudes
-
-    input
-      - d: array of magnitudes and errors
-      - nb : number of bands
-    output :
-      - indexes of row to be filtered
-
+    Args:
+        df (pd.dataFrame): dataframe
+        params (dict): dictionnary of params
+        prefix : prefix to select training or target
     """
 
-    u = d[:, 2]
-    idx_u = np.where(u > 31.8)[0]
+    bandIndices, bandNames, bandColumns, bandVarColumns, redshiftColumn,refBandColumn = readColumnPositions(params, prefix=prefix)
 
-    return idx_u
-
-
-def mag_to_flux(d,nb=6):
-    """
-
-    Convert magnitudes to fluxes
-
-    input:
-       -d : array of magnitudes with errors
-
-
-    :return:
-        array of fluxes with error
-    """
-
-    fluxes = np.zeros_like(d)
-
-    fluxes[:, 0] = d[:, 0]  # object index
-    fluxes[:, 1] = d[:, 1]  # redshift
-
-    for idx in np.arange(nb):
-        fluxes[:, 2 + idx] = np.power(10, -0.4 * d[:, 2 + idx]) # fluxes
-        fluxes[:, 8 + idx] = fluxes[:, 2 + idx] * d[:, 8 + idx] # errors on fluxes
-    return fluxes
+    data = np.array([])
+    return data
 
 
 
-def filter_flux_entries(d,nb=6,nsig=5):
-    """
-    Filter noisy data on the the number SNR
 
-    input :
-     - d: flux and errors array
-     - nb : number of bands
-     - nsig : number of sigma
-
-     output:
-        indexes of row to suppress
-
-    """
-
-
-    # collection of indexes
-    indexes = []
-    #indexes = np.array(indexes, dtype=np.int)
-    indexes = np.array(indexes, dtype=int)
-
-    for idx in np.arange(nb):
-        ratio = d[:, 2 + idx] / d[:, 8 + idx]  # flux divided by sigma-flux
-        bad_indexes = np.where(ratio < nsig)[0]
-        indexes = np.concatenate((indexes, bad_indexes))
-
-    indexes = np.unique(indexes)
-    return np.sort(indexes)
-
-
-def convertDESCcatChunk(configfilename,data,chunknum,flag_filter_validation = True, snr_cut_validation = 5):
+def convertDESCcatChunk(configfilename,data,chunknum):
 
         """
-        convertDESCcatChunk(configfilename,data,chunknum,flag_filter_validation = True, snr_cut_validation = 5)
+        convertDESCcatChunk(configfilename,data,chunknum)
 
         Convert files in ascii format to be used by Delight
         Input data can be filtered by series of filters. But it is necessary to remember which entries are kept,
@@ -275,111 +205,59 @@ def convertDESCcatChunk(configfilename,data,chunknum,flag_filter_validation = Tr
         - configfilename : Delight configuration file containing path for output files (flux variances and redshifts)
         - data : the DC2 data
         - chunknum : number of the chunk
-        - filter_validation : Flag to activate quality filter data
-        - snr_cut_validation : cut on flux SNR
-
+       
         output :
         - the target file of the chunk which path is in configuration file
         :return:
         - the list of selected (unfiltered DC2 data)
         """
+
+
+
         msg="--- Convert DESC catalogs chunk {}---".format(chunknum)
         logger.info(msg)
 
-        if FLAG_CONVERTFLUX_TODELIGHTUNIT:
-            flux_multiplicative_factor = 2.22e10
-        else:
-            flux_multiplicative_factor = 1
-
+        
         print("====> ********************************************************************************\n")
         print("====>  ** convertDESCcatChunk data from rail = ",data)
         print("====> ********************************************************************************\n")
 
-        
+       
+        # new implementation 
+        df_test = dicttodataframe(data)
+        df_test = df_test[list_of_cols]
 
-        magdata = dicttodataframe(data)
-        print(">>>>> pandas dataframe = ",magdata)
+        # assert 1
+        assert df_test.isnull().values.any() == False
+
+        # convert AB magnitude in AB flux (in units of 3630.78 Jy) into a new pandas dataframe
+        # Note missing magnitudes (high magnitudes values) are replaced by interpolated flux
+        # No row is removed
+
+        df_test_fl = df_test.apply(convert_to_ABflux, axis=1)
+
+        # assert 2
+        df_test_fl.isnull().values.any()
+
+        # merge the id and redshift with the fluxes
+        df_test = df_test[["id","redshift"]].join(df_test_fl)
+
+
+        print(">>>>> TEST-FLUX pandas dataframe = ",df_test)
 
         # produce a numpy array
-        magdata = group_entries(data)
+        #magdata = group_entries(data)
 
 
         # remember the number of entries
-        Nin = magdata.shape[0]
+        Nin = len(df_test)
+        idxFinal = Nin
         msg = "Number of objects = {} , in chunk : {}".format(Nin,chunknum)
         logger.debug(msg)
 
 
-        # keep indexes to filter data with bad magnitudes
-        if flag_filter_validation:
-            indexes_bad_mag = filter_mag_entries(magdata)
-            #magdata_f = np.delete(magdata, indexes_bad_mag, axis=0)
-            magdata_f = magdata # filtering will be done later
-
-
-        else:
-            indexes_bad_mag=np.array([])
-            magdata_f = magdata
-
-        Nbadmag = len(indexes_bad_mag)
-        msg = "Number of objects with bad magnitudes = {} , in chunk : {}".format(Nbadmag, chunknum)
-        logger.debug(msg)
-
-        #print("indexes_bad_mag = ",indexes_bad_mag)
-
-
-        # convert mag to fluxes
-        fdata = mag_to_flux(magdata_f)
-
-        # keep indexes to filter data with bad SNR
-        if flag_filter_validation:
-            indexes_bad_snr = filter_flux_entries(fdata, nsig = snr_cut_validation)
-            fdata_f = fdata
-            #fdata_f = np.delete(fdata, indexes_bad, axis=0)
-            #magdata_f = np.delete(magdata_f, indexes_bad, axis=0)
-        else:
-            fdata_f=fdata
-            indexes_bad_snr = np.array([])
-
-
-        Nbadsnr = len(indexes_bad_snr)
-        msg = "Number of objects with bad SNR = {} , in chunk : {}".format(Nbadsnr, chunknum)
-        logger.debug(msg)
-
-        #print("indexes_bad_snr = ", indexes_bad_snr)
-
-        # make union of indexes (unique id) before removing them for Delight
-        idxToRemove = reduce(np.union1d,(indexes_bad_mag,indexes_bad_snr))
-        NtoRemove=len(idxToRemove)
-        msg = "Number of objects filtered out = {} , in chunk : {}".format(NtoRemove, chunknum)
-        logger.debug(msg)
-
-        #print("indexes_to_remove = ", idxToRemove)
-
-        #pprint(idxToRemove)
-
-        # fdata_f contains the fluxes and errors to be send to Delight
-
-        # indexes of full input dataset
-        idxInitial = np.arange(Nin)
-
-        if NtoRemove>0:
-            fdata_f = np.delete(fdata_f,idxToRemove, axis=0)
-            idxFinal=np.delete(idxInitial,idxToRemove, axis=0)
-        else:
-            idxFinal = idxInitial
-
-
-        Nkept = len(idxFinal)
-        msg = "Number of objects kept = {} , in chunk : {}".format(Nkept, chunknum)
-        logger.debug(msg)
-
-        #print("indexes_kept = ", idxFinal)
-
-
-
-        gid = fdata_f[:, 0]
-        rs = fdata_f[:, 1]
+        gid =  df_test["id"].values
+        rs = df_test["redshift"].values
 
         # 2) parameter file
 
@@ -393,36 +271,23 @@ def convertDESCcatChunk(configfilename,data,chunknum,flag_filter_validation = Tr
 
         logger.debug(params['bandNames'])
 
-        # Generate target data
-        # -------------------------
+        # Generate target data (keep the original implementation)
+        # --------------------------------------------------------
 
         # what is fluxes and fluxes variance
         fluxes, fluxesVar = np.zeros((numObjects, numB)), np.zeros((numObjects, numB))
 
-        # loop on objects to simulate for the target and save in output trarget file
-        for k in range(numObjects):
-            # loop on number of bands
-            for i in range(numB):
-                trueFlux = fdata_f[k, 2 + i]
-                noise = fdata_f[k, 8 + i]
-
-                # put the DC2 data to the internal units of Delight
-                trueFlux *= flux_multiplicative_factor
-                noise *= flux_multiplicative_factor
-
-
-                # fluxes[k, i] = trueFlux + noise * np.random.randn() # noisy flux
-                fluxes[k, i] = trueFlux
-
-                if fluxes[k, i] < 0:
-                    # fluxes[k, i]=np.abs(noise)/10.
-                    fluxes[k, i] = trueFlux
-
-                fluxesVar[k, i] = noise ** 2.
-
         # container for target galaxies output
         # at some redshift, provides the flux and its variance inside each band
-        
+        # assume bands are in order u,g,r,i,z,y
+        for i in range(numB):
+            # the band order is defined in the parameter file
+            band_name = dict_of_filters[i]
+            flux_label = f"fab_{band_name}_lsst"
+            fluxerr_label = f"fab_err_{band_name}_lsst"
+            fluxes[:,i] = df_test[flux_label].values*flux_multiplicative_factor
+            fluxesVar[:,i] = (df_test[fluxerr_label].values*flux_multiplicative_factor)**2
+
 
         data = np.zeros((numObjects, 1 + len(params['target_bandOrder'])))
         bandIndices, bandNames, bandColumns, bandVarColumns, redshiftColumn, refBandColumn = readColumnPositions(params,
@@ -446,7 +311,12 @@ def convertDESCcatChunk(configfilename,data,chunknum,flag_filter_validation = Tr
             logger.info(msg)
             os.makedirs(outputdir)
 
+        # save txt file and hdf5 files
         np.savetxt(params['targetFile'], data)
+        hdf5file_fn =  os.path.basename(params['targetFile']).split(".")[0]+".h5"
+        output_path = os.path.dirname(params['targetFile'])
+        hdf5file_fullfn = os.path.join(output_path,hdf5file_fn)
+        writedataarrayh5(hdf5file_fullfn,'target_',data)
 
         # return the index of selected data
         return idxFinal
@@ -454,14 +324,13 @@ def convertDESCcatChunk(configfilename,data,chunknum,flag_filter_validation = Tr
 
 
 ################################################################################
-# New version of RAIL with data structure directly provided: (SDC 2021/10/23)  #
+# New version of RAIL with data structure directly provided: (SDC 2024/11/04)  #
 ################################################################################
 
-def convertDESCcatTrainData(configfilename,descatalogdata,flag_filter=True,snr_cut=5):
+def convertDESCcatTrainData(configfilename,descatalogdata):
 
     """
-    convertDESCcatData(configfilename,desccatalogdata,
-                   flag_filter=True,snr_cut=5,s):
+    convertDESCcatData(configfilename,desccatalogdata):
 
 
     Convert files in ascii format to be used by Delight
@@ -470,10 +339,7 @@ def convertDESCcatTrainData(configfilename,descatalogdata,flag_filter=True,snr_c
     - configfilename : Delight configuration file containingg path for output files (flux variances and redshifts)
     - desccatalogdata : data provided by RAIL (dictionary format)
  
-    - flag_filter : Activate filtering on training data
 
-    - snr_cut: Cut on flux SNR in training data
-  
 
     output :
     - the Delight training  which path is in configuration file
@@ -492,82 +358,40 @@ def convertDESCcatTrainData(configfilename,descatalogdata,flag_filter=True,snr_c
 
 
     print("====> ********************************************************************************\n")
-    print("====>  ** convertDESCcatTrainData data from rail = ",descatalogdata)
+    print("====> ** convertDESCcatTrainData data from rail = ",descatalogdata)
     print("====> ********************************************************************************\n")    
 
 
-    magdata = dicttodataframe(descatalogdata)
-    print(">>>>> pandas dataframe = ",magdata)
+    # get dict data into a pandas dataframe
+    df_train = dicttodataframe(descatalogdata)
+
+    # Check there are not nan
+    assert df_train.isnull().values.any() == False
+
+    # Compute the AB fluxes from the AB magnitudes
+    # Note if data are missing (high magnitudes), the flux are interpolated with higher errors
+    # No row is removed
+    df_train_fl = df_train.apply(convert_to_ABflux, axis=1)
+
+    # Check flux are not nan
+    df_train_fl.isnull().values.any() == False
+
+    # merge the id and redshift with the fluxes
+    df_train = df_train[["id","redshift"]].join(df_train_fl)
 
 
-    magdata = group_entries(descatalogdata)
+    print(">>>>> TRAIN-FLUX pandas dataframe = ",df_train)
+
+
     
     # remember the number of entries
-    Nin = magdata.shape[0]
+    Nin = len(df_train)
     msg = "Number of objects = {} , in  training dataset".format(Nin)
     logger.debug(msg)
 
-
-
-    # keep indexes to filter data with bad magnitudes
-    if flag_filter:
-        indexes_bad_mag = filter_mag_entries(magdata)
-        # magdata_f = np.delete(magdata, indexes_bad_mag, axis=0)
-        magdata_f = magdata  # filtering will be done later
-    else:
-        indexes_bad_mag = np.array([])
-        magdata_f = magdata
-
-    Nbadmag = len(indexes_bad_mag)
-    msg = "Number of objects with bad magnitudes {}  in training dataset".format(Nbadmag)
-    logger.debug(msg)
-
-
-    # convert mag to fluxes
-    fdata = mag_to_flux(magdata_f)
-
-    # keep indexes to filter data with bad SNR
-    if flag_filter:
-        indexes_bad_snr = filter_flux_entries(fdata, nsig=snr_cut)
-        fdata_f = fdata
-        # fdata_f = np.delete(fdata, indexes_bad, axis=0)
-        # magdata_f = np.delete(magdata_f, indexes_bad, axis=0)
-    else:
-        fdata_f = fdata
-        indexes_bad_snr = np.array([])
-
-    Nbadsnr = len(indexes_bad_snr)
-    msg = "Number of objects with bad SNR = {} , in  training dataset".format(Nbadsnr)
-    logger.debug(msg)
-
-    # make union of indexes (unique id) before removing them for Delight
-    idxToRemove = reduce(np.union1d, (indexes_bad_mag, indexes_bad_snr))
-    NtoRemove = len(idxToRemove)
-    msg = "Number of objects filtered out = {} , in training dataset".format(NtoRemove)
-    logger.debug(msg)
-
-
-    # fdata_f contains the fluxes and errors to be send to Delight
-
-    # indexes of full input dataset
-    idxInitial = np.arange(Nin)
-
-    if NtoRemove > 0:
-        fdata_f = np.delete(fdata_f, idxToRemove, axis=0)
-        idxFinal = np.delete(idxInitial, idxToRemove, axis=0)
-    else:
-        idxFinal = idxInitial
-
-
-    Nkept = len(idxFinal)
-    msg = "Number of objects kept = {} , in training dataset".format(Nkept)
-    logger.debug(msg)
-
-
-
-    gid = fdata_f[:, 0]
-    rs = fdata_f[:, 1]
-
+    gid =  df_train["id"].values
+    rs = df_train["redshift"].values
+    
 
     # 2) parameter file
     #-------------------
@@ -577,11 +401,9 @@ def convertDESCcatTrainData(configfilename,descatalogdata,flag_filter=True,snr_c
     numB = len(params['bandNames'])
     numObjects = len(gid)
 
-    msg = "get {} objects ".format(numObjects)
+    msg = "ConvertDESCcatTrainData  :: get {} objects ".format(numObjects)
     logger.debug(msg)
-
     logger.debug(params['bandNames'])
-
 
 
     # Generate training data
@@ -591,26 +413,17 @@ def convertDESCcatTrainData(configfilename,descatalogdata,flag_filter=True,snr_c
     # what is fluxes and fluxes variance
     fluxes, fluxesVar = np.zeros((numObjects, numB)), np.zeros((numObjects, numB))
 
-    # loop on objects to simulate for the training and save in output training file
-    for k in range(numObjects):
-        #loop on number of bands
-        for i in range(numB):
-            trueFlux = fdata_f[k,2+i]
-            noise    = fdata_f[k,8+i]
+    # container for training galaxies output
+    # at some redshift, provides the flux and its variance inside each band
+    # assume bands are in order u,g,r,i,z,y
+    for i in range(numB):
+        # the band order is defined in the parameter file
+        band_name = dict_of_filters[i]
+        flux_label = f"fab_{band_name}_lsst"
+        fluxerr_label = f"fab_err_{band_name}_lsst"
+        fluxes[:,i] = df_train[flux_label].values*flux_multiplicative_factor
+        fluxesVar[:,i] = (df_train[fluxerr_label].values*flux_multiplicative_factor)**2
 
-            # put the DC2 data to the internal units of Delight
-            trueFlux *= flux_multiplicative_factor
-            noise *= flux_multiplicative_factor
-
-
-            #fluxes[k, i] = trueFlux + noise * np.random.randn() # noisy flux
-            fluxes[k, i] = trueFlux
-
-            if fluxes[k, i]<0:
-                #fluxes[k, i]=np.abs(noise)/10.
-                fluxes[k, i] = trueFlux
-
-            fluxesVar[k, i] = noise**2.
 
     # container for training galaxies output
     # at some redshift, provides the flux and its variance inside each band
@@ -620,6 +433,7 @@ def convertDESCcatTrainData(configfilename,descatalogdata,flag_filter=True,snr_c
     for ib, pf, pfv in zip(bandIndices, bandColumns, bandVarColumns):
         data[:, pf] = fluxes[:, ib]
         data[:, pfv] = fluxesVar[:, ib]
+
     data[:, redshiftColumn] = rs
     data[:, -1] = 0  # NO type
 
@@ -632,16 +446,22 @@ def convertDESCcatTrainData(configfilename,descatalogdata,flag_filter=True,snr_c
         msg = " outputdir not existing {} then create it ".format(outputdir)
         logger.info(msg)
         os.makedirs(outputdir)
-
-
     np.savetxt(params['trainingFile'], data)
+    hdf5file_fn =  os.path.basename(params['trainingFile']).split(".")[0]+".h5"
+    output_path = os.path.dirname(params['trainingFile'])
+    hdf5file_fullfn = os.path.join(output_path,hdf5file_fn)
+    writedataarrayh5(hdf5file_fullfn,'training_',data)
+
+
+
+
 
 #---
 
-def convertDESCcatTargetFile(configfilename,desctargetcatalogfile,flag_filter=True,snr_cut=5):
+def convertDESCcatTargetFile(configfilename,desctargetcatalogfile):
 
     """
-    convertDESCcatTargetFile(configfilename,desctargetcatalogfile,flag_filter=True,snr_cut)
+    convertDESCcatTargetFile(configfilename,desctargetcatalogfile)
     
 
     Convert files in ascii format to be used by Delight
@@ -674,92 +494,35 @@ def convertDESCcatTargetFile(configfilename,desctargetcatalogfile,flag_filter=Tr
 
 
 
-    df = h5filetodataframe(desctargetcatalogfile, group="photometry")
-    print(">>>>> pandas dataframe = ",df)
+    df_target = h5filetodataframe(desctargetcatalogfile, group="photometry")
+    print(">>>>> TARGET-MAG pandas dataframe = ",df_target)
 
-
-    # Generate Target data : procedure similar to the training
-    #-----------------------------------------------------------
-
-    # 1) DESC catalog file
-    #---------------------
     
-    msg = "read DESC hdf5 validation file {} ".format(desctargetcatalogfile)
-    logger.debug(msg)
 
-    f = io.readHdf5ToDict(desctargetcatalogfile, groupname='photometry')
+    # Check there are not nan
+    assert df_target.isnull().values.any() == False
 
-    # produce a numpy array
-    magdata = group_entries(f)
+    # Compute the AB fluxes from the AB magnitudes
+    # Note if data are missing (high magnitudes), the flux are interpolated with higher errors
+    # No row is removed
+    df_target_fl = df_target.apply(convert_to_ABflux, axis=1)
 
+    # Check flux are not nan
+    df_target_fl.isnull().values.any() == False
 
-    # remember the number of entries
-    Nin = magdata.shape[0]
-    msg = "Number of objects = {} , in  validation dataset".format(Nin)
-    logger.debug(msg)
-
-
-    # filter bad data
-    # keep indexes to filter data with bad magnitudes
-    if flag_filter:
-        indexes_bad_mag = filter_mag_entries(magdata)
-        # magdata_f = np.delete(magdata, indexes_bad_mag, axis=0)
-        magdata_f = magdata  # filtering will be done later
-    else:
-        indexes_bad_mag = np.array([])
-        magdata_f = magdata
-
-    Nbadmag = len(indexes_bad_mag)
-    msg = "Number of objects with bad magnitudes = {} , in validation dataset".format(Nbadmag)
-    logger.debug(msg)
+    # merge the id and redshift with the fluxes
+    df_target = df_target[["id","redshift"]].join(df_target_fl)
 
 
-
-    # convert mag to fluxes
-    fdata = mag_to_flux(magdata_f)
-
-    # keep indexes to filter data with bad SNR
-    if flag_filter:
-        indexes_bad_snr = filter_flux_entries(fdata, nsig=snr_cut)
-        fdata_f = fdata
-        # fdata_f = np.delete(fdata, indexes_bad, axis=0)
-        # magdata_f = np.delete(magdata_f, indexes_bad, axis=0)
-    else:
-        fdata_f = fdata
-        indexes_bad_snr = np.array([])
-
-    Nbadsnr = len(indexes_bad_snr)
-    msg = "Number of objects with bad SNR = {} , in  validation dataset".format(Nbadsnr)
-    logger.debug(msg)
-
-    # make union of indexes (unique id) before removing them for Delight
-    idxToRemove = reduce(np.union1d, (indexes_bad_mag, indexes_bad_snr))
-    NtoRemove = len(idxToRemove)
-    msg = "Number of objects filtered out = {} , in validation dataset".format(NtoRemove)
-    logger.debug(msg)
-
-    # fdata_f contains the fluxes and errors to be send to Delight
-
-    # indexes of full input dataset
-    idxInitial = np.arange(Nin)
-
-    if NtoRemove > 0:
-        fdata_f = np.delete(fdata_f, idxToRemove, axis=0)
-        idxFinal = np.delete(idxInitial, idxToRemove, axis=0)
-    else:
-        idxFinal = idxInitial
+    print(">>>>> TARGET-FLUX pandas dataframe = ",df_target)
 
 
-    Nkept = len(idxFinal)
-    msg = "Number of objects kept = {} , in validation dataset".format(Nkept)
-    logger.debug(msg)
+    gid =  df_target["id"].values
+    rs = df_target["redshift"].values
 
-    gid = fdata_f[:, 0]
-    rs = fdata_f[:, 1]
     
     
-    
-    # 2) parameter file
+    # 2) decode parameter file
     #------------------- 
 
     params = parseParamFile(configfilename, verbose=False, catFilesNeeded=False)
@@ -782,30 +545,17 @@ def convertDESCcatTargetFile(configfilename,desctargetcatalogfile,flag_filter=Tr
 
     fluxes, fluxesVar = np.zeros((numObjects, numB)), np.zeros((numObjects, numB))
 
-    # loop on objects in target files
-    for k in range(numObjects):
-        # loop on bands
-        for i in range(numB):
-            # compute the flux in that band at the redshift
-            trueFlux = fdata_f[k, 2 + i]
-            noise = fdata_f[k, 8 + i]
 
-            # put the DC2 data to the internal units of Delight
-            trueFlux *= flux_multiplicative_factor
-            noise *= flux_multiplicative_factor
-
-            #fluxes[k, i] = trueFlux + noise * np.random.randn()
-            fluxes[k, i] = trueFlux
-
-            if fluxes[k, i]<0:
-                #fluxes[k, i]=np.abs(noise)/10.
-                fluxes[k, i] = trueFlux
-
-            fluxesVar[k, i] = noise**2
-
-
-            
-
+    # container for target galaxies output
+    # at some redshift, provides the flux and its variance inside each band
+    # assume bands are in order u,g,r,i,z,y
+    for i in range(numB):
+        # the band order is defined in the parameter file
+        band_name = dict_of_filters[i]
+        flux_label = f"fab_{band_name}_lsst"
+        fluxerr_label = f"fab_err_{band_name}_lsst"
+        fluxes[:,i] = df_target[flux_label].values*flux_multiplicative_factor
+        fluxesVar[:,i] = (df_target[fluxerr_label].values*flux_multiplicative_factor)**2
             
 
     data = np.zeros((numObjects, 1 + len(params['target_bandOrder'])))
@@ -830,6 +580,11 @@ def convertDESCcatTargetFile(configfilename,desctargetcatalogfile,flag_filter=Tr
         os.makedirs(outputdir)
 
     np.savetxt(params['targetFile'], data)
+    hdf5file_fn =  os.path.basename(params['targetFile']).split(".")[0]+".h5"
+    output_path = os.path.dirname(params['targetFile'])
+    hdf5file_fullfn = os.path.join(output_path,hdf5file_fn)
+    writedataarrayh5(hdf5file_fullfn,'target_',data)
+
 
     
 
@@ -846,4 +601,4 @@ if __name__ == "__main__":  # pragma: no cover
     if len(sys.argv) < 4:
         raise Exception('Please provide a parameter file and the training and validation and catalog files')
 
-    convertDESCcat(sys.argv[1],sys.argv[2],sys.argv[3])
+    convertDESCcatTargetFile(sys.argv[1],sys.argv[2])
