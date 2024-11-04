@@ -59,6 +59,20 @@ def h5filetodataframe(filename, group="photometry"):
         df = df.astype({"id": int})
     return df
 
+def dicttodataframe(dict_data):
+    """
+    Function to convert the LSST magnitudes in rail dict into a pandas dataFrame
+    """
+   
+    list_of_keys = list(dict_data.keys())
+    
+    df = pd.DataFrame()
+    for key in list_of_keys:
+        df[key] = dict_data[key]
+
+    if "id" in list_of_keys:
+        df = df.astype({"id": int})
+    return df
 
 def CheckBadFluxes(fl, dfl, mag, dmag, maxmag=30.0):
     """
@@ -277,9 +291,14 @@ def convertDESCcatChunk(configfilename,data,chunknum,flag_filter_validation = Tr
         else:
             flux_multiplicative_factor = 1
 
-        print("====> ********************************************************************************")
+        print("====> ********************************************************************************\n")
         print("====>  ** convertDESCcatChunk data from rail = ",data)
-        print("====> ********************************************************************************")
+        print("====> ********************************************************************************\n")
+
+        
+
+        magdata = dicttodataframe(data)
+        print(">>>>> pandas dataframe = ",magdata)
 
         # produce a numpy array
         magdata = group_entries(data)
@@ -472,9 +491,14 @@ def convertDESCcatTrainData(configfilename,descatalogdata,flag_filter=True,snr_c
         flux_multiplicative_factor = 1
 
 
-    print("====> ********************************************************************************")
+    print("====> ********************************************************************************\n")
     print("====>  ** convertDESCcatTrainData data from rail = ",descatalogdata)
-    print("====> ********************************************************************************")    
+    print("====> ********************************************************************************\n")    
+
+
+    magdata = dicttodataframe(descatalogdata)
+    print(">>>>> pandas dataframe = ",magdata)
+
 
     magdata = group_entries(descatalogdata)
     
@@ -648,6 +672,10 @@ def convertDESCcatTargetFile(configfilename,desctargetcatalogfile,flag_filter=Tr
     print("====>  ** convertDESCcatTargetFile : desctargetcatalogfile = ", desctargetcatalogfile)
     print("====> ********************************************************************************")    
 
+
+
+    df = h5filetodataframe(desctargetcatalogfile, group="photometry")
+    print(">>>>> pandas dataframe = ",df)
 
 
     # Generate Target data : procedure similar to the training
