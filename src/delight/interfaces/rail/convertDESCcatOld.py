@@ -11,8 +11,6 @@
 import sys
 import os
 import numpy as np
-import pandas as pd
-import h5py
 from functools import reduce
 
 from delight.io import *
@@ -25,129 +23,6 @@ logger = logging.getLogger(__name__)
 # option to convert DC2 flux level (in AB units) into internal Delight units
 # this option will be removed when optimisation of parameters will be implemented
 FLAG_CONVERTFLUX_TODELIGHTUNIT=True
-
-
-# the order by which one want the data
-list_of_cols = [
-    "id",
-    "redshift",
-    "mag_u_lsst",
-    "mag_g_lsst",
-    "mag_r_lsst",
-    "mag_i_lsst",
-    "mag_z_lsst",
-    "mag_y_lsst",
-    "mag_err_u_lsst",
-    "mag_err_g_lsst",
-    "mag_err_r_lsst",
-    "mag_err_i_lsst",
-    "mag_err_z_lsst",
-    "mag_err_y_lsst",
-]
-list_of_filters = ["u", "g", "r", "i", "z", "y"]
-
-
-def h5filetodataframe(filename, group="photometry"):
-    """
-    Function to convert the LSST magnitudes hdf5 file into a pandas dataFrame
-    """
-    data = h5py.File(filename, "r")
-    list_of_keys = list(data[group].keys())
-    all_data = np.array([data[group][key][:] for key in list_of_keys])
-    df = pd.DataFrame(all_data.T, columns=list_of_keys)
-    if "id" in list_of_keys:
-        df = df.astype({"id": int})
-    return df
-
-
-def CheckBadFluxes(fl, dfl, mag, dmag, maxmag=30.0):
-    """
-    Interpolate fluxes as ther are missing
-    Parameters:
-       fl : array of fluxes
-       dfl : array of flux error
-       mag : array of magnitudes
-       dmag: array on magnitude errors
-       maxmag: max magnitude 
-    Return : 
-       the arrays of fluxes and flux error corrected for mission values
-    """
-    indexes_bad = np.where(mag > maxmag)[0]
-    indexes_good = np.where(mag < maxmag)[0]
-
-    if len(indexes_bad) > 0:
-        for idx in indexes_bad:
-            # in band g,r,i,z
-            if idx > 0 and idx < Nf - 1:
-                # have two good neighbourgs
-                if idx - 1 in indexes_good and idx + 1 in indexes_good:
-                    fl[idx] = np.mean([fl[idx - 1], fl[idx + 1]])
-                    dfl[idx] = np.max([dfl[idx - 1], dfl[idx + 1]]) * 5.0
-                elif idx - 1 in indexes_good:
-                    fl[idx] = fl[idx - 1]
-                    dfl[idx] = dfl[idx - 1] * 10.0
-                elif idx + 1 in indexes_good:
-                    fl[idx] = fl[idx + 1]
-                    dfl[idx] = dfl[idx + 1] * 10.0
-                else:
-                    fl[idx] = np.mean(fl[indexes_good])
-                    dfl[idx] = np.max(fl[indexes_good]) * 100.0
-            elif idx == 0:
-                if idx + 1 in indexes_good:
-                    fl[idx] = fl[idx + 1]
-                    dfl[idx] = dfl[idx + 1] * 10.0
-                else:
-                    fl[idx] = np.mean(fl[indexes_good])
-                    dfl[idx] = np.max(fl[indexes_good]) * 100.0
-            elif idx == Nf - 1:
-                if idx - 1 in indexes_good:
-                    fl[idx] = fl[idx - 1]
-                    dfl[idx] = dfl[idx - 1] * 10.0
-                else:
-                    fl[idx] = np.mean(fl[indexes_good])
-                    dfl[idx] = np.max(fl[indexes_good]) * 100.0
-
-    return fl, dfl
-
-
-def convert_to_ABflux(row):
-    """
-    Convert AB magnitudes into FAB flux (units AB, that is per 3631 Jy
-    This function is dedicated to be applied to a pandas dataframe containing magnitudes and magnitudes error
-    Parameters:
-      row : one row of the pandas dataframe
-    Returns:
-      the pandas series of flux and flux error corrected for missing values by usingthe CheckBadFluxes 
-    """
-
-    fl = np.zeros(Nf)
-    dfl = np.zeros(Nf)
-    mag = np.zeros(Nf)
-    dmag = np.zeros(Nf)
-    all_fname = []
-    all_ferrname = []
-
-    for idx, band in enumerate(list_of_filters):
-        mag_label = f"mag_{band}_lsst"
-        magerr_label = f"mag_err_{band}_lsst"
-        flux_label = f"fab_{band}_lsst"
-        fluxerr_label = f"fab_err_{band}_lsst"
-        m = row[mag_label]
-        dm = row[magerr_label]
-        f = np.power(10.0, -0.4 * m)
-        df = np.log(10.0) / 2.5 * f * dm
-        fl[idx] = f
-        mag[idx] = m
-        dfl[idx] = df
-        dmag[idx] = dm
-        all_fname.append(flux_label)
-        all_ferrname.append(fluxerr_label)
-
-    # decide what to do if one magnitude is too high
-    fl, dfl = CheckBadFluxes(fl, dfl, mag, dmag)
-    column_names = all_fname + all_ferrname
-    data = np.concatenate((fl, dfl))
-    return pd.Series(data, index=column_names)
 
 
 def group_entries(f):
@@ -277,9 +152,7 @@ def convertDESCcatChunk(configfilename,data,chunknum,flag_filter_validation = Tr
         else:
             flux_multiplicative_factor = 1
 
-        print("====> ********************************************************************************")
-        print("====>  ** convertDESCcatChunk data from rail = ",data)
-        print("====> ********************************************************************************")
+
 
         # produce a numpy array
         magdata = group_entries(data)
@@ -779,11 +652,6 @@ def convertDESCcatTrainData(configfilename,descatalogdata,flag_filter=True,snr_c
     else:
         flux_multiplicative_factor = 1
 
-
-    print("====> ********************************************************************************")
-    print("====>  ** convertDESCcatTrainData data from rail = ",descatalogdata)
-    print("====> ********************************************************************************")    
-
     magdata = group_entries(descatalogdata)
     
     # remember the number of entries
@@ -950,11 +818,6 @@ def convertDESCcatTargetFile(configfilename,desctargetcatalogfile,flag_filter=Tr
         flux_multiplicative_factor = 2.22e10
     else:
         flux_multiplicative_factor = 1
-
-
-    print("====> ********************************************************************************")
-    print("====>  ** convertDESCcatTargetFile : desctargetcatalogfile = ", desctargetcatalogfile)
-    print("====> ********************************************************************************")    
 
 
 
