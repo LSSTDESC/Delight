@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 
 
-def getDelightRedshiftEstimation(configfilename,chunknum,nsize,index_sel):
+def getDelightRedshiftEstimation(configfilename,chunknum,nsize):
     """
     zmode, PDFs = getDelightRedshiftEstimation(delightparamfilechunk,self.chunknum,nsize,indexes_sel)
 
@@ -45,7 +45,7 @@ def getDelightRedshiftEstimation(configfilename,chunknum,nsize,index_sel):
     pdfs /= np.trapz(pdfs, x=redshiftGrid, axis=1)[:, None]
     nzbins = len(redshiftGrid)
     full_pdfs = np.zeros([nsize, nzbins])
-    full_pdfs[index_sel] = pdfs
+    full_pdfs = pdfs
 
     # find the index of the redshift where there is the mode
     # the following arrays have size m
@@ -59,7 +59,7 @@ def getDelightRedshiftEstimation(configfilename,chunknum,nsize,index_sel):
 
     # copy only the processed redshifts and widths into the final arrays of size nsize
     # for RAIL
-    zmode[index_sel] = redshifts_of_zmode
+    zmode = redshifts_of_zmode
 
 
     return zmode, full_pdfs
@@ -76,7 +76,7 @@ def getdatah5(filename,prefix):
     return f_array
 
 
-def getDelightRedshiftEstimationh5(configfilename,chunknum,nsize,index_sel):
+def getDelightRedshiftEstimationh5(configfilename,chunknum,nsize):
     """
     zmode, PDFs = getDelightRedshiftEstimation(delightparamfilechunk,self.chunknum,nsize,indexes_sel)
 
@@ -106,7 +106,7 @@ def getDelightRedshiftEstimationh5(configfilename,chunknum,nsize,index_sel):
     pdfs /= np.trapz(pdfs, x=redshiftGrid, axis=1)[:, None]
     nzbins = len(redshiftGrid)
     full_pdfs = np.zeros([nsize, nzbins])
-    full_pdfs[index_sel] = pdfs
+    full_pdfs = pdfs
 
     # find the index of the redshift where there is the mode
     # the following arrays have size m
@@ -120,7 +120,7 @@ def getDelightRedshiftEstimationh5(configfilename,chunknum,nsize,index_sel):
 
     # copy only the processed redshifts and widths into the final arrays of size nsize
     # for RAIL
-    zmode[index_sel] = redshifts_of_zmode
+    zmode = redshifts_of_zmode
 
 
     return zmode, full_pdfs

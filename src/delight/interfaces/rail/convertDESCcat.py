@@ -318,8 +318,7 @@ def convertDESCcatChunk(configfilename,data,chunknum):
         hdf5file_fullfn = os.path.join(output_path,hdf5file_fn)
         writedataarrayh5(hdf5file_fullfn,'target_',data)
 
-        # return the index of selected data
-        return idxFinal
+        
 
 
 
