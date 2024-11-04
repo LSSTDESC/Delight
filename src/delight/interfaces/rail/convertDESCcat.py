@@ -175,20 +175,55 @@ def convert_to_ABflux(row):
     return pd.Series(data, index=column_names)
 
 
-def generatedelightdataarray(df,params,prefix):
-    """Generate the 2D array for sving it in file
 
-    Args:
-        df (pd.dataFrame): dataframe
-        params (dict): dictionnary of params
-        prefix : prefix to select training or target
+def builddelighttable(params,df,prefix):
     """
+    Parameters:
+      params : the dictionnary of dDelight config parameters
+      df : the pandas dataframe of fluxes
+      prefix : prefix training_ or target_
 
-    bandIndices, bandNames, bandColumns, bandVarColumns, redshiftColumn,refBandColumn = readColumnPositions(params, prefix=prefix)
+    Return
+      the 2D array (numObj, ncols ) used for input of Delight, where ncols
+      the number of columns for fluxes and flux variances including redshift
+      the order is specified in the params
+    """
+    # determine the size of output data
+    numObjects = len(df)
+    the_bandOrder_list = params[prefix+'bandOrder']
 
-    data = np.array([])
+    # create the output array
+    data = np.zeros((numObjects, 1 + len(the_bandOrder_list)))
+
+    # retrieve some indexing for the output data
+    bandIndices, bandNames, bandColumns, bandVarColumns, redshiftColumn,\
+            refBandColumn = readColumnPositions(params, prefix=prefix)
+
+    # the the band order 
+    filt_order_names = [ name.split("_")[1] for name in bandNames] 
+
+    # loop on band index (from params) 
+    for idx_band in bandIndices:
+        band_shortname = bandNames[idx_band].split("_")[1]
+
+        # determine the column name in dataframe    
+        flux_label = f"fab_{band_shortname}_lsst"
+        fluxerr_label = f"fab_err_{band_shortname}_lsst"
+
+        # determine the index in output array
+        idx_bandColumns = bandColumns[idx_band]
+        idx_bandVarColumns = bandVarColumns[idx_band]
+
+        # copy the data in output array
+        data[:,idx_bandColumns] = df[flux_label].values*flux_multiplicative_factor
+        data[:,idx_bandVarColumns] = (df[fluxerr_label].values*flux_multiplicative_factor)**2
+
+    # fill the redshift
+    data[:,redshiftColumn] = df["redshift"].values
+    # fill the type (here the identifier DC2 data)
+    data[:, -1] = df["id"].values
     return data
-
+   
 
 
 
@@ -251,57 +286,21 @@ def convertDESCcatChunk(configfilename,data,chunknum):
 
         # remember the number of entries
         Nin = len(df_test)
-        idxFinal = Nin
         msg = "Number of objects = {} , in chunk : {}".format(Nin,chunknum)
         logger.debug(msg)
 
-
-        gid =  df_test["id"].values
-        rs = df_test["redshift"].values
 
         # 2) parameter file
 
         params = parseParamFile(configfilename, verbose=False, catFilesNeeded=False)
 
-        numB = len(params['bandNames'])
-        numObjects = len(gid)
-
-        msg = "get {} objects ".format(numObjects)
-        logger.debug(msg)
-
-        logger.debug(params['bandNames'])
-
         # Generate target data (keep the original implementation)
         # --------------------------------------------------------
 
-        # what is fluxes and fluxes variance
-        fluxes, fluxesVar = np.zeros((numObjects, numB)), np.zeros((numObjects, numB))
+        data = builddelighttable(params,df_test,prefix="target_")
 
-        # container for target galaxies output
-        # at some redshift, provides the flux and its variance inside each band
-        # assume bands are in order u,g,r,i,z,y
-        for i in range(numB):
-            # the band order is defined in the parameter file
-            band_name = dict_of_filters[i]
-            flux_label = f"fab_{band_name}_lsst"
-            fluxerr_label = f"fab_err_{band_name}_lsst"
-            fluxes[:,i] = df_test[flux_label].values*flux_multiplicative_factor
-            fluxesVar[:,i] = (df_test[fluxerr_label].values*flux_multiplicative_factor)**2
-
-
-        data = np.zeros((numObjects, 1 + len(params['target_bandOrder'])))
-        bandIndices, bandNames, bandColumns, bandVarColumns, redshiftColumn, refBandColumn = readColumnPositions(params,
-                                                                                                                 prefix="target_")
-
-        for ib, pf, pfv in zip(bandIndices, bandColumns, bandVarColumns):
-            data[:, pf] = fluxes[:, ib]
-            data[:, pfv] = fluxesVar[:, ib]
-        data[:, redshiftColumn] = rs
-        data[:, -1] = 0  # NO TYPE
-
-        msg = "write file {}".format(os.path.basename(params['targetFile']))
-        logger.debug(msg)
-
+        # Write output file
+        # --------------------
         msg = "write target file {}".format(params['targetFile'])
         logger.debug(msg)
 
@@ -388,54 +387,19 @@ def convertDESCcatTrainData(configfilename,descatalogdata):
     msg = "Number of objects = {} , in  training dataset".format(Nin)
     logger.debug(msg)
 
-    gid =  df_train["id"].values
-    rs = df_train["redshift"].values
-    
 
     # 2) parameter file
     #-------------------
 
     params = parseParamFile(configfilename, verbose=False, catFilesNeeded=False)
 
-    numB = len(params['bandNames'])
-    numObjects = len(gid)
+    # Generate training data (keep the original implementation)
+    # --------------------------------------------------------
 
-    msg = "ConvertDESCcatTrainData  :: get {} objects ".format(numObjects)
-    logger.debug(msg)
-    logger.debug(params['bandNames'])
+    data = builddelighttable(params,df_train,prefix="training_")
 
-
-    # Generate training data
-    #-------------------------
-
-
-    # what is fluxes and fluxes variance
-    fluxes, fluxesVar = np.zeros((numObjects, numB)), np.zeros((numObjects, numB))
-
-    # container for training galaxies output
-    # at some redshift, provides the flux and its variance inside each band
-    # assume bands are in order u,g,r,i,z,y
-    for i in range(numB):
-        # the band order is defined in the parameter file
-        band_name = dict_of_filters[i]
-        flux_label = f"fab_{band_name}_lsst"
-        fluxerr_label = f"fab_err_{band_name}_lsst"
-        fluxes[:,i] = df_train[flux_label].values*flux_multiplicative_factor
-        fluxesVar[:,i] = (df_train[fluxerr_label].values*flux_multiplicative_factor)**2
-
-
-    # container for training galaxies output
-    # at some redshift, provides the flux and its variance inside each band
-    data = np.zeros((numObjects, 1 + len(params['training_bandOrder'])))
-    bandIndices, bandNames, bandColumns, bandVarColumns, redshiftColumn,refBandColumn = readColumnPositions(params, prefix="training_")
-
-    for ib, pf, pfv in zip(bandIndices, bandColumns, bandVarColumns):
-        data[:, pf] = fluxes[:, ib]
-        data[:, pfv] = fluxesVar[:, ib]
-
-    data[:, redshiftColumn] = rs
-    data[:, -1] = 0  # NO type
-
+    # write the training data file
+    # ------------------------------
 
     msg="write training file {}".format(params['trainingFile'])
     logger.debug(msg)
@@ -515,10 +479,6 @@ def convertDESCcatTargetFile(configfilename,desctargetcatalogfile):
 
     print(">>>>> TARGET-FLUX pandas dataframe = ",df_target)
 
-
-    gid =  df_target["id"].values
-    rs = df_target["redshift"].values
-
     
     
     # 2) decode parameter file
@@ -526,48 +486,14 @@ def convertDESCcatTargetFile(configfilename,desctargetcatalogfile):
 
     params = parseParamFile(configfilename, verbose=False, catFilesNeeded=False)
 
-    numB = len(params['bandNames'])
-    numObjects = len(gid)
 
-    msg = "get {} objects ".format(numObjects)
-    logger.debug(msg)
+    # Generate target data (keep the original implementation)
+    # --------------------------------------------------------
 
-    logger.debug(params['bandNames'])
-    
-    
-    # 3) Generate target data
-    #------------------------
+    data = builddelighttable(params,df_target,prefix="target_")
 
-    numObjects = len(gid)
-    msg = "get {} objects ".format(numObjects)
-    logger.debug(msg)
-
-    fluxes, fluxesVar = np.zeros((numObjects, numB)), np.zeros((numObjects, numB))
-
-
-    # container for target galaxies output
-    # at some redshift, provides the flux and its variance inside each band
-    # assume bands are in order u,g,r,i,z,y
-    for i in range(numB):
-        # the band order is defined in the parameter file
-        band_name = dict_of_filters[i]
-        flux_label = f"fab_{band_name}_lsst"
-        fluxerr_label = f"fab_err_{band_name}_lsst"
-        fluxes[:,i] = df_target[flux_label].values*flux_multiplicative_factor
-        fluxesVar[:,i] = (df_target[fluxerr_label].values*flux_multiplicative_factor)**2
-            
-
-    data = np.zeros((numObjects, 1 + len(params['target_bandOrder'])))
-    bandIndices, bandNames, bandColumns, bandVarColumns, redshiftColumn,refBandColumn = readColumnPositions(params, prefix="target_")
-
-    for ib, pf, pfv in zip(bandIndices, bandColumns, bandVarColumns):
-        data[:, pf] = fluxes[:, ib]
-        data[:, pfv] = fluxesVar[:, ib]
-    data[:, redshiftColumn] = rs
-    data[:, -1] = 0  # NO TYPE
-
-    msg = "write file {}".format(os.path.basename(params['targetFile']))
-    logger.debug(msg)
+    # write the target data file
+    # --------------------------
 
     msg = "write target file {}".format(params['targetFile'])
     logger.debug(msg)
@@ -597,7 +523,7 @@ if __name__ == "__main__":  # pragma: no cover
 
 
 
-    if len(sys.argv) < 4:
+    if len(sys.argv) < 3:
         raise Exception('Please provide a parameter file and the training and validation and catalog files')
 
     convertDESCcatTargetFile(sys.argv[1],sys.argv[2])
