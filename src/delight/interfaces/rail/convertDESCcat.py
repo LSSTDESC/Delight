@@ -25,11 +25,17 @@ logger = logging.getLogger(__name__)
 # option to convert DC2 flux level (in AB units) into internal Delight units
 # this option will be removed when optimisation of parameters will be implemented
 FLAG_CONVERTFLUX_TODELIGHTUNIT = True
+FLAG_MAXMAG = True
 
 if FLAG_CONVERTFLUX_TODELIGHTUNIT:
     flux_multiplicative_factor = 2.22e10
 else:
     flux_multiplicative_factor = 1
+
+if FLAG_MAXMAG:
+    MAXMAG = 35.
+else:
+    MAXMAG = 50.
 
 
 
@@ -85,7 +91,7 @@ def dicttodataframe(dict_data):
         df = df.astype({"id": int})
     return df
 
-def CheckBadFluxes(fl, dfl, mag, dmag, maxmag=30.0):
+def CheckBadFluxes(fl, dfl, mag, dmag, maxmag=MAXMAG):
     """
     Interpolate fluxes as ther are missing
     Parameters:
@@ -206,7 +212,7 @@ def builddelighttable(params,df,prefix):
     for idx_band in bandIndices:
         band_shortname = bandNames[idx_band].split("_")[1]
 
-        # determine the column name in dataframe    
+        # determine the column name in dataframe
         flux_label = f"fab_{band_shortname}_lsst"
         fluxerr_label = f"fab_err_{band_shortname}_lsst"
 
@@ -248,13 +254,12 @@ def convertDESCcatChunk(configfilename,data,chunknum):
         """
 
 
-
         msg="--- Convert DESC catalogs chunk {}---".format(chunknum)
         logger.info(msg)
 
         
         print("====> ********************************************************************************\n")
-        print("====>  ** convertDESCcatChunk data from rail = ",data)
+        print("====>  ** convertDESCcatChunk data from rail by data ")
         print("====> ********************************************************************************\n")
 
        
@@ -356,7 +361,7 @@ def convertDESCcatTrainData(configfilename,descatalogdata):
 
 
     print("====> ********************************************************************************\n")
-    print("====> ** convertDESCcatTrainData data from rail = ",descatalogdata)
+    print("====> ** convertDESCcatTrainData data from rail by data ")
     print("====> ********************************************************************************\n")    
 
 
@@ -443,12 +448,8 @@ def convertDESCcatTargetFile(configfilename,desctargetcatalogfile):
     """
 
 
-    logger.info("--- Convert DESC target catalogs ---")
+    logger.info("--- Convert DESC target catalogs from filename ---")
 
-    if FLAG_CONVERTFLUX_TODELIGHTUNIT:
-        flux_multiplicative_factor = 2.22e10
-    else:
-        flux_multiplicative_factor = 1
 
 
     print("====> ********************************************************************************")
