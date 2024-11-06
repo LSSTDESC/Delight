@@ -1,3 +1,4 @@
+"""Module to build the model of flux in bands at different redshift using SED templates"""
 import sys
 import numpy as np
 import matplotlib.pyplot as plt
@@ -23,6 +24,7 @@ redshiftDistGrid, redshiftGrid, redshiftGridGP = createGrids(params)
 numZ = redshiftGrid.size
 
 # Loop over SEDs
+# One flux in band - redshift model per SED
 for sed_name in sed_names:
     seddata = np.genfromtxt(dir_seds + '/' + sed_name + fmt)
     seddata[:, 1] *= seddata[:, 0]
@@ -51,5 +53,5 @@ for sed_name in sed_names:
             #f_mod[iz, jf] = np.trapz(ysed * yf_z, x=xf_z) / norm
             f_mod[iz, jf] = trapezoid(ysed * yf_z, x=xf_z) / norm
             f_mod[iz, jf] *= opz**2. / DL(redshiftGrid[iz])**2. / (4*np.pi)
-
+    # save 2D array (i-redshift,j-bands) 
     np.savetxt(dir_seds + '/' + sed_name + '_fluxredshiftmod.txt', f_mod)

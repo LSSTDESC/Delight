@@ -1,4 +1,4 @@
-
+"""Apply Template Fitting to target data"""
 import sys
 #from mpi4py import MPI
 import numpy as np
@@ -32,6 +32,8 @@ numZ = redshiftGrid.size
 bandIndices, bandNames, bandColumns, bandVarColumns, redshiftColumn,\
     refBandColumn = readColumnPositions(params, prefix="target_")
 
+
+# build the flux-redshift model over each Template by building the 3D array f_mod(iz,t,jb)
 dir_seds = params['templates_directory']
 dir_filters = params['bands_directory']
 lambdaRef = params['lambdaRef']
@@ -54,7 +56,7 @@ if threadNum == 0:
 print('Thread ', threadNum, ' analyzes lines ', firstLine, ' to ', lastLine)
 
 numMetrics = 7 + len(params['confidenceLevels'])
-# Create local files to store results
+# Create local files to store results : the pdfs and some metrics
 localPDFs = np.zeros((numLines, numZ))
 localMetrics = np.zeros((numLines, numMetrics))
 
@@ -73,14 +75,20 @@ for z, normedRefFlux, bands, fluxes, fluxesVar,\
     #    * (DL(redshiftGrid)**2. * (1+redshiftGrid))[:, None]
     ell_hat_z = 1
     params['ellPriorSigma'] = 1e12
+
+    # compute likelihood
     like_grid = approx_flux_likelihood(
         fluxes, fluxesVar, f_mod[:, :, bands],
         normalized=True, marginalizeEll=True,
         ell_hat=ell_hat_z, ell_var=(ell_hat_z*params['ellPriorSigma'])**2)
+    
     b_in = np.array(params['p_t'])[None, :]
     beta2 = np.array(params['p_z_t'])**2.0
+    # redshift prior
     p_z = b_in * redshiftGrid[:, None] / beta2[None, :] *\
         np.exp(-0.5 * redshiftGrid[:, None]**2 / beta2[None, :])
+    
+    # compute the posterior from likelihood x prior
     like_grid *= p_z
     localPDFs[loc, :] += like_grid.sum(axis=1)
     if localPDFs[loc, :].sum() > 0:

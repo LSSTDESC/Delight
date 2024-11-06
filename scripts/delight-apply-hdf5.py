@@ -25,6 +25,8 @@ bandCoefAmplitudes, bandCoefPositions, bandCoefWidths, norms\
 numBands = bandCoefAmplitudes.shape[0]
 
 redshiftDistGrid, redshiftGrid, redshiftGridGP = createGrids(params)
+
+# GP need a SED-template based
 f_mod_interp = readSEDs(params)
 nt = f_mod_interp.shape[0]
 nz = redshiftGrid.size
@@ -35,6 +37,8 @@ lambdaRef = params['lambdaRef']
 sed_names = params['templates_names']
 f_mod_grid = np.zeros((redshiftGrid.size, len(sed_names),
                        len(params['bandNames'])))
+
+# load the flux-redshift model from SED templates (f_mod(iz,t,jb))
 for t, sed_name in enumerate(sed_names):
     f_mod_grid[:, t, :] = np.loadtxt(dir_seds + '/' + sed_name +
                                      '_fluxredshiftmod.txt')
@@ -61,6 +65,8 @@ if threadNum == 0:
 #comm.Barrier()
 print('Thread ', threadNum, ' analyzes lines ', firstLine, ' to ', lastLine)
 
+# gaussian kernel
+# The gaussian kernel need the above flux-redshift model
 DL = approx_DL()
 gp = PhotozGP(f_mod_interp,
               bandCoefAmplitudes, bandCoefPositions, bandCoefWidths,
@@ -77,6 +83,8 @@ localCompressIndices = np.zeros((numLines,  Ncompress), dtype=int)
 localCompEvidences = np.zeros((numLines,  Ncompress))
 
 # Looping over chunks of the training set to prepare model predictions over z
+# Apparently the training could consists in a number of diffeerent Chunks
+# Each galaxy in the training is an Flux-template by itself.   
 numChunks = params['training_numChunks']
 for chunk in range(numChunks):
     TR_firstLine = int(chunk * numObjectsTraining / float(numChunks))
@@ -85,14 +93,17 @@ for chunk in range(numChunks):
     targetIndices = np.arange(TR_firstLine, TR_lastLine)
     numTObjCk = TR_lastLine - TR_firstLine
     redshifts = np.zeros((numTObjCk, ))
+    # model of flux at different redshift in different bands for each training sample
     model_mean = np.zeros((numZ, numTObjCk, numBands))
     model_covar = np.zeros((numZ, numTObjCk, numBands))
+
     bestTypes = np.zeros((numTObjCk, ), dtype=int)
     ells = np.zeros((numTObjCk, ), dtype=int)
+
     loc = TR_firstLine - 1
 
     # loop on training data and training GP coefficients produced by delight_learn
-    # It fills the model_mean and model_covar predicted by GP
+    # It fills the Flux model_mean and model_covar predicted by GP for the training galaxy
     trainingDataIter = getDataFromFileh5(params, TR_firstLine, TR_lastLine,
                                        prefix="training_", ftype="gpparams")
     for loc, (z, ell, bands, X, B, flatarray) in enumerate(trainingDataIter):
@@ -118,8 +129,11 @@ for chunk in range(numChunks):
         fCI = open(params['compressIndicesFile'])
         itCompM = itertools.islice(fC, firstLine, lastLine)
         iterCompI = itertools.islice(fCI, firstLine, lastLine)
+
+
     targetDataIter = getDataFromFileh5(params, firstLine, lastLine,
                                      prefix="target_", getXY=False, CV=False)
+    # loop on targets
     for loc, (z, normedRefFlux, bands, fluxes, fluxesVar, bCV, dCV, dVCV)\
             in enumerate(targetDataIter):
         t1 = time()
