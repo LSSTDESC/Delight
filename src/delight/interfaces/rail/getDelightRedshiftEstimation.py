@@ -76,9 +76,10 @@ def getdatah5(filename,prefix):
     return f_array
 
 
-def getDelightRedshiftEstimationh5(configfilename,chunknum,nsize):
+def getDelightRedshiftEstimationh5(configfilename,chunknum,prefix="gp_pdfs_"):
     """
-    zmode, PDFs = getDelightRedshiftEstimation(delightparamfilechunk,self.chunknum,nsize,indexes_sel)
+    zmode, PDFs = getDelightRedshiftEstimation(delightparamfilechunk,nsize)
+    Get the results from the gaussian process fitting
 
     input args:
       - nsize : size of arrays to return
@@ -87,23 +88,37 @@ def getDelightRedshiftEstimationh5(configfilename,chunknum,nsize):
     :return:
     """
 
-    msg = "--- getDelightRedshiftEstimationh5({}) for chunk {}---".format(nsize,chunknum)
+    msg = f"--- getDelightRedshiftEstimationh5() for chunk {chunknum}---"
     logger.info(msg)
-
-    # initialize arrays to be returned
-    zmode  = np.full(nsize, fill_value=-1,dtype=np.float64)
 
     params = parseParamFile(configfilename, verbose=False)
 
-    # redshiftGrid has nz size
-    redshiftDistGrid, redshiftGrid, redshiftGridGP = createGrids(params)
+    if prefix == "gp_pdfs_":
+      fullfilename_results = params['redshiftpdfFile']
+    elif prefix == "temp_pdfs_":
+      fullfilename_results  = params['redshiftpdfFileTemp']
+    else:
+       raise(f"unknown prefix {prefix} for getting the results") 
 
     # the pdfs have (m x nz) size
     # where m is the number of redshifts calculated by delight
     # nz is the number of redshifts
-    #pdfs = np.loadtxt(params['redshiftpdfFile'])
-    pdfs = getdatah5(params['redshiftpdfFile'],prefix="gp_pdfs_")
+
+    pdfs = getdatah5(fullfilename_results,prefix=prefix)
+
+    nsize = pdfs.shape[0]
+
+
+    # initialize arrays to be returned
+    zmode  = np.full(nsize, fill_value=-1,dtype=np.float64)
+ 
+
+    # redshiftGrid has nz size
+    redshiftDistGrid, redshiftGrid, redshiftGridGP = createGrids(params)
+
+    # normalize the pdfs  
     pdfs /= np.trapz(pdfs, x=redshiftGrid, axis=1)[:, None]
+
     nzbins = len(redshiftGrid)
     full_pdfs = np.zeros([nsize, nzbins])
     full_pdfs = pdfs
@@ -119,7 +134,7 @@ def getDelightRedshiftEstimationh5(configfilename,chunknum,nsize):
     zshifts_of_mode = redshiftGrid[np.newaxis,:]-redshifts_of_zmode[:,np.newaxis]
 
     # copy only the processed redshifts and widths into the final arrays of size nsize
-    # for RAIL
+    # for RAIL (could provide other results also like likelihood, evidence,...)
     zmode = redshifts_of_zmode
 
 
