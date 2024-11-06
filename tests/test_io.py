@@ -18,20 +18,23 @@ paramFile = "tests/parametersTest.cfg"
 
 
 
-@pytest.fixture(scope="module")
-def datadir(tmpdir, request):
-    '''
-    Fixture responsible for searching a folder with the same name of test
-    module and, if available, moving all contents to a temporary directory so
-    tests can use them freely.
-    '''
-    filename = request.module.__file__
-    test_dir, _ = os.path.splitext(filename)
+#@pytest.fixture(scope="module")
+#def datadir(tmpdir, request):
+#    '''
+#    Fixture responsible for searching a folder with the same name of test
+#    module and, if available, moving all contents to a temporary directory so
+#    tests can use them freely.
+#    '''
+#    filename = request.module.__file__
+#    test_dir, _ = os.path.splitext(filename)
+#
+#    if os.path.isdir(test_dir):
+#        dir_util.copy_tree(test_dir, bytes(tmpdir))
+#
+#    return tmpdir
+#  >> got an error ScopeMismatch: You tried to access the function scoped fixture tmpdir with a module scoped request object. Requesting fixture stack:
+#  >> tests/test_io.py:21:  def datadir(tmpdir, request)
 
-    if os.path.isdir(test_dir):
-        dir_util.copy_tree(test_dir, bytes(tmpdir))
-
-    return tmpdir
 
 
 @pytest.mark.skip(reason="Unable to read an external file in pytest (at NERSC)")
