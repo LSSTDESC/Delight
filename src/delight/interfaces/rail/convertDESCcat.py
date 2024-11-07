@@ -385,8 +385,6 @@ def convertDESCcatTrainData(configfilename,descatalogdata):
 
     print(">>>>> TRAIN-FLUX pandas dataframe = ",df_train)
 
-
-    
     # remember the number of entries
     Nin = len(df_train)
     msg = "Number of objects = {} , in  training dataset".format(Nin)
@@ -419,9 +417,6 @@ def convertDESCcatTrainData(configfilename,descatalogdata):
     output_path = os.path.dirname(params['trainingFile'])
     hdf5file_fullfn = os.path.join(output_path,hdf5file_fn)
     writedataarrayh5(hdf5file_fullfn,'training_',data)
-
-
-
 
 
 #---
@@ -483,7 +478,7 @@ def convertDESCcatTargetFile(configfilename,desctargetcatalogfile):
     
     
     # 2) decode parameter file
-    #------------------- 
+    #--------------------------------- 
 
     params = parseParamFile(configfilename, verbose=False, catFilesNeeded=False)
 

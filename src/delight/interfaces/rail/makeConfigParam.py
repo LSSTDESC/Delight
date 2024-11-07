@@ -250,11 +250,18 @@ metricsFileTemp:  data_lsst/galaxies-redshiftmetrics-cww.txt
             paramfile_txt += "metricsFile: " + os.path.join(thepath, f'galaxies-redshiftmetrics_{chunknum}.txt')
             paramfile_txt += "\n"
             paramfile_txt += "metricsFileTemp: " + os.path.join(thepath, f'galaxies-redshiftmetrics-cww_{chunknum}.txt')
-    paramfile_txt +=  \
+            paramfile_txt += "\n"
+
+    if inputs_rail == None:        
+        paramfile_txt +=  \
 """
 useCompression: False
 Ncompress: 10
 """
+    else:
+        paramfile_txt += "\n" 
+        paramfile_txt += f"useCompression: {inputs_rail['target_usecompression']}\n"
+        paramfile_txt += f"Ncompress: {inputs_rail['target_ncompress']}\n"
 
     if inputs_rail == None:
         paramfile_txt +=  \
