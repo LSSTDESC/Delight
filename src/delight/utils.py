@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
-from scipy.misc import derivative
+# from scipy.misc import derivative
 
 
 class approx_DL():
@@ -245,6 +245,9 @@ def computeMetrics(ztrue, redshiftGrid, PDF, confIntervals):
 def derivative_test(x0, fun, fun_grad, relative_accuracy,
                     n=1, lim=0, order=9, dxfac=0.01,
                     verbose=False, superverbose=False):
+    """
+    # Comment this out and see if things still work, they should, as nothing calls this!
+    
     grads = fun_grad(x0)
     for i in range(x0.size):
         if verbose:
@@ -260,3 +263,5 @@ def derivative_test(x0, fun, fun_grad, relative_accuracy,
         if np.abs(grads2) >= lim:
             np.testing.assert_allclose(grads2, grads[i],
                                        rtol=relative_accuracy)
+    """
+    raise NotImplementedError

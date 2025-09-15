@@ -4,7 +4,6 @@ import numpy as np
 from scipy.special import gamma, gammaln, polygamma, gammainc
 from collections import OrderedDict
 import astropy.cosmology.core
-from scipy.misc import derivative
 from delight.utils import approx_DL
 
 

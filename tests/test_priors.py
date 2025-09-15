@@ -2,8 +2,8 @@
 
 import numpy as np
 from delight.priors import *
-from scipy.misc import derivative
-from delight.utils import derivative_test
+# from scipy.misc import derivative
+# from delight.utils import derivative_test
 import pytest
 
 
@@ -43,6 +43,7 @@ def test_RayleighRedshiftDistr():
     assert mod(z) == res
 
 
+@pytest.mark.skip(reason="skipping because scipy removed derivative needed in test, and this is the only remaining occurrence of that function")
 def test_powerLawLuminosityFct():
     mod = powerLawLuminosityFct()
     theta = np.array([-1.2])
