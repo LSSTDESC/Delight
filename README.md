@@ -10,6 +10,18 @@
 [![Benchmarks](https://img.shields.io/github/actions/workflow/status/LSSTDESC/delight/asv-main.yml?label=benchmarks)](https://LSSTDESC.github.io/delight/)
 
 
+**Notes on installation:**
+Delight sometimes has issues with installation, a new issue that has popped up occasionally is when trying to import delight you may see an error message saying something like `duplicate LC_RPATH`.  This *may or may not* be remedied by running the following command before installing Delight:
+```
+export LDSHARED ="$CC -bundle -undefined dynamic_lookup
+```
+then running
+```
+python setup.py build_ext --inplace
+```
+or pip installing Delight.
+
+
 
 
 **Photometric redshift via Gaussian processes with physical kernels.**

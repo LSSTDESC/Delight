@@ -15,7 +15,7 @@ from functools import reduce
 
 from delight.io import *
 from delight.utils import *
-from tables_io import io
+import tables_io
 import logging
 
 logger = logging.getLogger(__name__)
@@ -830,7 +830,8 @@ def convertDESCcatTargetFile(configfilename,desctargetcatalogfile,flag_filter=Tr
     msg = "read DESC hdf5 validation file {} ".format(desctargetcatalogfile)
     logger.debug(msg)
 
-    f = io.readHdf5ToDict(desctargetcatalogfile, groupname='photometry')
+    #f = io.readHdf5ToDict(desctargetcatalogfile, groupname='photometry')
+    f = tables_io.read(desctargetcatalogfile, groupname='photometry')
 
     # produce a numpy array
     magdata = group_entries(f)

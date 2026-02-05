@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
-from scipy.misc import derivative
-
+# derivative removed from scipy, replace with numdifftools
+# from scipy.misc import derivative
+import numdifftools as nd
 
 class approx_DL():
     """
@@ -254,7 +255,9 @@ def derivative_test(x0, fun, fun_grad, relative_accuracy,
             x = 1*x0
             x[i] = v
             return fun(x)
-        grads2 = derivative(f, x0[i], dx=dxfac*x0[i], order=order, n=n)
+        # grads2 = derivative(f, x0[i], dx=dxfac*x0[i], order=order, n=n)
+        deriv = nd.Derivative(f, step=dxfac*x0[i], order=order, n=n)
+        grads2 = deriv(x0[i])
         if superverbose:
             print(i, 'analytical:', grads[i], 'numerical:', grads2)
         if np.abs(grads2) >= lim:

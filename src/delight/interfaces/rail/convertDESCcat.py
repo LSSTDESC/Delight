@@ -17,7 +17,7 @@ from functools import reduce
 
 from delight.io import *
 from delight.utils import *
-from tables_io import io
+# from tables_io import io
 import logging
 
 logger = logging.getLogger(__name__)

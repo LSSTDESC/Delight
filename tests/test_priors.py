@@ -2,7 +2,7 @@
 
 import numpy as np
 from delight.priors import *
-from scipy.misc import derivative
+# from scipy.misc import derivative
 from delight.utils import derivative_test
 import pytest
 
@@ -114,7 +114,7 @@ def test_MultiTypePopulationPrior():
 
             relative_accuracy = 0.01
             derivative_test(theta, prob, prob_grad, relative_accuracy,
-                            dxfac=1e-2, order=15, lim=1e-4, superverbose=True)
+                            dxfac=1e-2, order=14, lim=1e-4, superverbose=True)
 
     def prob(x):
         mod2 = deepcopy(mod)
@@ -129,5 +129,5 @@ def test_MultiTypePopulationPrior():
     relative_accuracy = 0.01
     print(prob_grad(theta))
     derivative_test(theta, prob, prob_grad, relative_accuracy,
-                    dxfac=1e-1, order=15, lim=1e6, superverbose=True)
+                    dxfac=1e-1, order=14, lim=1e6, superverbose=True)
     # assert 0
