@@ -2,7 +2,7 @@
 
 import numpy as np
 from delight.sedmixture import *
-from scipy.misc import derivative
+# from scipy.misc import derivative
 
 relative_accuracy = 0.01
 
