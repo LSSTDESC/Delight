@@ -23,7 +23,6 @@ dependencies = [
 "Cython>=3.0.0",
 "build",
 "setuptools",
-"numdifftools",
 "numpy",
 "scipy",
 "matplotlib",
