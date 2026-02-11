@@ -831,7 +831,7 @@ def convertDESCcatTargetFile(configfilename,desctargetcatalogfile,flag_filter=Tr
     logger.debug(msg)
 
     #f = io.readHdf5ToDict(desctargetcatalogfile, groupname='photometry')
-    f = tables_io.read(desctargetcatalogfile, groupname='photometry')
+    f = tables_io.read(desctargetcatalogfile, groupname='photometry', tType="numpyDict")
 
     # produce a numpy array
     magdata = group_entries(f)
