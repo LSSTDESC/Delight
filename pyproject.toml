@@ -1,6 +1,6 @@
 
 [project]
-name = "delight"
+name = "desc-delight"
 license = {file = "LICENSE"}
 readme = "README.md"
 authors = [
