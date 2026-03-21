@@ -86,7 +86,7 @@ def processSEDs(configfilename):
             # Only consider range where >1% max
             ind = np.where(yf > 0.01*np.max(yf))[0]
             lambdaMin, lambdaMax = xf[ind[0]], xf[ind[-1]]
-            norm = np.trapz(yf/xf, x=xf) # SDC: probably Cb
+            norm = np.trapezoid(yf/xf, x=xf) # SDC: probably Cb
 
             # iz index on redshift
             for iz in range(redshiftGrid.size):
@@ -94,7 +94,7 @@ def processSEDs(configfilename):
                 xf_z = np.linspace(lambdaMin / opz, lambdaMax / opz, num=5000)
                 yf_z = interp1d(xf / opz, yf)(xf_z)
                 ysed = sed_interp(xf_z)
-                f_mod[iz, jf] = np.trapz(ysed * yf_z, x=xf_z) / norm
+                f_mod[iz, jf] = np.trapezoid(ysed * yf_z, x=xf_z) / norm
                 f_mod[iz, jf] *= opz**2. / DL(redshiftGrid[iz])**2. / (4*np.pi)
         # for each SED, save the flux at each redshift (along row) for each
         tmpoutpath = os.path.join(dir_seds, sed_name + '_fluxredshiftmod.txt')

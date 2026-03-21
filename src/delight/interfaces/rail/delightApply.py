@@ -172,7 +172,7 @@ def delightApply(configfilename):
             localPDFs[loc, :] += like_grid.sum(axis=1)  # the final redshift posterior is sum over training galaxies posteriors
 
             # compute the evidence for each model
-            evidences = np.trapz(like_grid, x=redshiftGrid, axis=0)
+            evidences = np.trapezoid(like_grid, x=redshiftGrid, axis=0)
             t3 = time()
 
             if params['useCompression'] and not params['compressionFilesFound']:
@@ -405,7 +405,7 @@ def delightApplyh5(configfilename):
             localPDFs[loc, :] += like_grid.sum(axis=1)  # the final redshift posterior is sum over training galaxies posteriors
 
             # compute the evidence for each model
-            evidences = np.trapz(like_grid, x=redshiftGrid, axis=0)
+            evidences = np.trapezoid(like_grid, x=redshiftGrid, axis=0)
             t3 = time()
 
             if params['useCompression'] and not params['compressionFilesFound']:

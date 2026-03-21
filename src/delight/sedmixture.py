@@ -14,7 +14,7 @@ class PhotometricFilter:
         self.wavelengthGrid = tabulatedWavelength
         self.tabulatedResponse = tabulatedResponse
         self.interp = interp1d(tabulatedWavelength, tabulatedResponse)
-        self.norm = np.trapz(tabulatedResponse/tabulatedWavelength,
+        self.norm = np.trapezoid(tabulatedResponse/tabulatedWavelength,
                              x=tabulatedWavelength)
         ind = np.where(
             tabulatedResponse > 0.001*np.max(tabulatedResponse)
@@ -76,7 +76,7 @@ class PhotometricFilter:
 #                     ysedext = facz * ysed *\
 #                         10**-0.4*self.DustModel(xf_z, self.dustGrid[jd])
 #                     fmodgrid[iz, jd] =\
-#                         np.trapz(ysedext * yf_z, x=xf_z) / filt.norm
+#                         np.trapezoid(ysedext * yf_z, x=xf_z) / filt.norm
 #             self.fbinterps[filt.bandName] = RectBivariateSpline(
 #                 self.redshiftGrid, self.dustGrid, fmodgrid)
 #
@@ -130,7 +130,7 @@ class SpectralTemplate_z:
                 facz = opz**2. / (4*np.pi*self.DL(self.redshiftGrid[iz])**2.)
                 ysedext = facz * ysed
                 self.fmodgrid[iz, ib] =\
-                    np.trapz(ysedext * yf_z, x=xf_z) / filt.norm
+                    np.trapezoid(ysedext * yf_z, x=xf_z) / filt.norm
             self.fbinterps[filt.bandName] = UnivariateSpline(
                 self.redshiftGrid, self.fmodgrid[:, ib], s=0)
             self.fbcoefs[filt.bandName] = np.polyfit(

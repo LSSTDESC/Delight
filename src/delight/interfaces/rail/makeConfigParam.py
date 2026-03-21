@@ -297,14 +297,14 @@ lines_pos: 6500 5002.26 3732.22
 lines_width: 20.0 20.0 20.0
 """
     else:
-        zPriorSigma = inputs_rail["zPriorSigma"]
+        zPriorSigma = inputs_rail["z_prior_sigma"]
         ellPriorSigma = inputs_rail["ellPriorSigma"]
-        fluxLuminosityNorm = inputs_rail["fluxLuminosityNorm"]
+        fluxLuminosityNorm = inputs_rail["flux_luminosity_norm"]
         alpha_C = inputs_rail["alpha_C"]
         V_C = inputs_rail["V_C"]
         alpha_L = inputs_rail["alpha_L"]
         V_L = inputs_rail["V_L"]
-        lineWidthSigma = inputs_rail["lineWidthSigma"]
+        lineWidthSigma = inputs_rail["line_width_sigma"]
 
         paramfile_txt += \
 """
@@ -348,11 +348,13 @@ redshiftDisBinSize: 0.2
         msg = "Decode redshift parameter from RAIL config file"
         logger.debug(msg)
 
-        dlght_redshiftMin           = inputs_rail["dlght_redshiftMin"]
-        dlght_redshiftMax           = inputs_rail["dlght_redshiftMax"]
-        dlght_redshiftNumBinsGPpred = inputs_rail["dlght_redshiftNumBinsGPpred"]
-        dlght_redshiftBinSize       = inputs_rail["dlght_redshiftBinSize"]
-        dlght_redshiftDisBinSize    = inputs_rail["dlght_redshiftDisBinSize"]
+        dlght_redshiftMin           = inputs_rail["zmin"]
+        dlght_redshiftMax           = inputs_rail["zmax"]
+	# dlght_redshiftMin           = inputs_rail["dlght_redshift_min"]
+        # dlght_redshiftMax           = inputs_rail["dlght_redshift_max"]
+        dlght_redshiftNumBinsGPpred = inputs_rail["dlght_redshift_numbins_gp_pred"]
+        dlght_redshiftBinSize       = inputs_rail["dlght_redshift_bin_size"]
+        dlght_redshiftDisBinSize    = inputs_rail["dlght_redshift_dis_bin_size"]
 
         # will check later what to do with these parameters
 

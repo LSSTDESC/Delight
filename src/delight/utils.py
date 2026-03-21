@@ -199,10 +199,10 @@ def CIlevel(redshiftGrid, PDF, fraction, numlevels=200):
     """
     Computes confidence interval from PDF.
     """
-    evidence = np.trapz(PDF, redshiftGrid)
+    evidence = np.trapezoid(PDF, redshiftGrid)
     for level in np.linspace(0, PDF.max(), num=numlevels):
         ind = np.where(PDF <= level)
-        resint = np.trapz(PDF[ind], redshiftGrid[ind])
+        resint = np.trapezoid(PDF[ind], redshiftGrid[ind])
         if resint >= fraction*evidence:
             return level
 

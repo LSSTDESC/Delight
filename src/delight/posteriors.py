@@ -113,7 +113,7 @@ def object_evidences_marglnzell(
     # nt * nz
 
     # evidences_it = \
-    # np.trapz(prior_lnz[None, :, :] * marglike, x=z_grid, axis=2)
+    # np.trapezoid(prior_lnz[None, :, :] * marglike, x=z_grid, axis=2)
     x = z_grid[None, None, :]
     y = prior_lnz[None, :, :] * marglike
     evidences_it = 0.5 * np.sum((y[:, :, 1:]+y[:, :, :-1]) *
@@ -149,8 +149,8 @@ def object_evidences_numerical(
                              f_obs_var[:, :]**0.5)
                 like_lnzell[:, it, iz, il] = np.prod(v, axis=1)
 
-    evidences_it = np.trapz(
-        np.trapz(prior_lnzell[None, :, :, :] * like_lnzell[:, :, :, :],
+    evidences_it = np.trapezoid(
+        np.trapezoid(prior_lnzell[None, :, :, :] * like_lnzell[:, :, :, :],
                  x=ell_grid, axis=3), x=z_grid, axis=2)    # nobj * nt
 
     return evidences_it
